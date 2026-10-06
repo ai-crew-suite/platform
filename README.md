@@ -6,6 +6,9 @@ AI Crew Suite is a Backstage plugin workspace for building retrieval-augmented, 
 
 This repo includes the heart of the project: the core backend plugin that provides a fluent API for creating graph runners in user-facing backend plugins, and its node plugin counterpart providing shareable types and convenient utilities. It also includes a common frontend library plugin for agents.
 
+> [!WARNING]
+> This repo is pre-beta and under going heavy development as of October, 2026. We are refactoring from LangGraph to a fluent API for workflows in agentic plugins based on Temporal + Mem0 Vercel AI SDK.
+
 ## 🏗️ Development Workflow
 
 This repository is a Backstage monorepo using Yarn 4 Plug'n'Play, Turbo, TypeScript project references, and package-local plugin builds.

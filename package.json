@@ -1,20 +1,12 @@
 {
-  "name": "root",
+  "name": "@ai-crew-suite/platform",
   "version": "0.0.1",
   "private": true,
   "engines": {
-    "node": "22 || 24"
+    "node": "22 || 24",
+    "npm": "Please use Yarn instead (Corepack enable)"
   },
   "packageManager": "yarn@4.18.0",
-  "lint-staged": {
-    "*.{js,jsx,ts,tsx,mjs,cjs}": [
-      "eslint --config packages/config-eslint/eslint.monorepo.config.ts --fix"
-    ],
-    "*.{json,md,css,scss}": [
-      "prettier --write"
-    ]
-  },
-  "prettier": "@backstage/cli/config/prettier",
   "workspaces": [
     "packages/*",
     "plugins/**/*"
@@ -76,26 +68,24 @@
     "venv:setup": "yarn venv:make && yarn venv:install"
   },
   "devDependencies": {
-    "@ai-crew-suite/cli": "workspace:*",
+    "@ai-crew-suite/cli": "catalog:dev",
     "@backstage/cli": "backstage:^",
     "@backstage/cli-defaults": "backstage:^",
     "@backstage/cli-module-new": "backstage:^",
     "@backstage/config": "backstage:^",
-    "@changesets/cli": "^3.0.3",
-    "@playwright/test": "^1.63.0",
-    "@types/node": "^22.20.4",
-    "concurrently": "^10.0.5",
-    "http-server": "^14.1.1",
-    "husky": "^9.1.7",
-    "i18next": "26.4.2",
-    "lint-staged": "^17.5.1",
-    "node-gyp": "^13.0.2",
+    "@changesets/cli": "catalog:dev",
+    "@playwright/test": "catalog:dev",
+    "@types/node": "catalog:dev",
+    "concurrently": "catalog:dev",
+    "http-server": "catalog:dev",
+    "husky": "catalog:dev",
+    "lint-staged": "catalog:dev",
     "only-allow": "^1.2.2",
-    "prettier": "^3.9.8",
+    "prettier": "catalog:dev",
     "prop-types": "^15.8.1",
-    "storybook": "^10.6.0",
-    "turbo": "^2.11.2",
-    "typescript": "6.0.3",
+    "storybook": "catalog:dev",
+    "turbo": "catalog:dev",
+    "typescript": "catalog:dev",
     "whatwg-fetch": "^3.6.20"
   },
   "resolutions": {
@@ -103,5 +93,13 @@
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "typescript": "6.0.3"
-  }
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx,mjs,cjs}": [
+      "eslint --config packages/config-eslint/eslint.monorepo.config.ts --fix"
+    ],
+    "*.{json,md,css,scss}": [
+      "prettier --write"
+    ]
+  },
 }

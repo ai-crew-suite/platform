@@ -1,5 +1,5 @@
 {
-  "name": "@ai-crew-suite/plugin-kernel-node",
+  "name": "@ai-crew-suite/plugin-platform-node",
   "description": "Core extension point registry for the AI Crew Suite platform.",
   "version": "0.0.1",
   "main": "src/index.ts",
@@ -22,20 +22,20 @@
   },
   "backstage": {
     "role": "node-library",
-    "pluginId": "kernel",
+    "pluginId": "platform",
     "pluginPackage": [
-      "@ai-crew-suite/plugin-kernel-backend",
-      "@ai-crew-suite/plugin-kernel-node"
+      "@ai-crew-suite/plugin-platform-backend",
+      "@ai-crew-suite/plugin-platform-node"
     ]
   },
   "bugs": {
-    "url": "https://github.com/ai-crew-suite/ai-crew-suite",
+    "url": "https://github.com/ai-crew-suite/platform",
     "email": "support@ai-crew-suite.dev"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/ai-crew-suite/ai-crew-suite",
-    "directory": "plugins/kernel/node"
+    "url": "https://github.com/ai-crew-suite/platform",
+    "directory": "plugins/node"
   },
   "files": [
     "dist"
@@ -53,12 +53,11 @@
     "@backstage/backend-plugin-api": "backstage:^",
     "@backstage/errors": "backstage:^",
     "@backstage/integration": "backstage:^",
-    "@langchain/core": "catalog:langchain-core",
-    "i18next": "catalog:i18next",
-    "zod": "catalog:zod"
+    "i18next": "catalog:prod",
+    "zod": "catalog:prod"
   },
   "devDependencies": {
-    "@ai-crew-suite/cli": "workspace:*",
+    "@ai-crew-suite/cli": "catalog:dev",
     "vitest": "catalog:vitest"
   }
 }
