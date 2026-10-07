@@ -21,7 +21,7 @@ import type {
   Artifact,
   AuditLogEntry,
   RunRecord,
-} from '@ai-crew-suite/plugin-kernel-node';
+} from '@ai-crew-suite/plugin-platform-node';
 import { SqlAgentRuntimeStore } from '../SqlAgentRuntimeStore';
 
 type QueryDouble = {

@@ -1,4 +1,4 @@
-# @ai-crew-suite/plugin-kernel-node
+# @ai-crew-suite/plugin-platform-node
 
 > Core Developer Documentation for the AI Crew Suite platform.
 
@@ -28,14 +28,14 @@ Run installation routines and build compilation tracks directly from the monorep
 
 ```bash
 yarn install --refresh
-yarn turbo run build --filter=@ai-crew-suite/plugin-kernel-node
+yarn turbo run build --filter=@ai-crew-suite/plugin-platform-node
 ```
 
 ### 2. Running Unit & Integration Tests
 
 ```bash
-yarn turbo run lint --filter=@ai-crew-suite/plugin-kernel-node
-yarn turbo run test --filter=@ai-crew-suite/plugin-kernel-node
+yarn turbo run lint --filter=@ai-crew-suite/plugin-platform-node
+yarn turbo run test --filter=@ai-crew-suite/plugin-platform-node
 ```
 
 ## Technical Extension Checklist

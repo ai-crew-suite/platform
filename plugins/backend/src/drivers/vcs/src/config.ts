@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 import { Config } from '@backstage/config';
-import type { VcsProviderId, VcsConfig } from '@ai-crew-suite/plugin-kernel-node';
+import type { VcsProviderId, VcsConfig } from '@ai-crew-suite/plugin-platform-node';
 
 /**
  * Extracts the active VCS routing keys from application configs.

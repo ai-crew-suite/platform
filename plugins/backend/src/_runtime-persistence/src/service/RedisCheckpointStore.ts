@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 import type { Redis } from 'ioredis';
-import type { CheckpointStore } from '@ai-crew-suite/plugin-kernel-node';
+import type { CheckpointStore } from '@ai-crew-suite/plugin-platform-node';
 
 /**
  * Options controlling Redis-backed checkpoint persistence.

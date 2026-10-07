@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 import { Config } from '@backstage/config';
-import { QualityScorecardsConfig } from '@ai-crew-suite/plugin-kernel-node';
+import { QualityScorecardsConfig } from '@ai-crew-suite/plugin-platform-node';
 
 export const readQualityScorecardsConfig = (config: Config): QualityScorecardsConfig => {
   const qualityConfig = config.getOptionalConfig('ai.integrations.qualityScorecards');

@@ -18,7 +18,7 @@ import type { Redis } from 'ioredis';
 import type {
   SessionMessage,
   SessionStore,
-} from '@ai-crew-suite/plugin-kernel-node';
+} from '@ai-crew-suite/plugin-platform-node';
 
 /**
  * Options controlling Redis-backed session persistence.

@@ -18,7 +18,7 @@ import {
   ToolDefinition,
   QualityScorecardsDriver,
   TechRadarProposalInput
-} from '@ai-crew-suite/plugin-kernel-node';
+} from '@ai-crew-suite/plugin-platform-node';
 
 export interface CreateQualityScorecardsToolsOptions {
   driver: QualityScorecardsDriver;

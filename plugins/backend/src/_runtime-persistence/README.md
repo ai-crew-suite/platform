@@ -6,7 +6,7 @@ It replaces the runtime persistence that previously lived in `plugin-ai-core-bac
 
 ## What it provides
 
-The module assembles the five runtime persistence contracts from `@ai-crew-suite/plugin-kernel-node` and registers them with the AI backend plugin through the `runtimeStoreExtensionPoint`:
+The module assembles the five runtime persistence contracts from `@ai-crew-suite/plugin-platform-node` and registers them with the AI backend plugin through the `runtimeStoreExtensionPoint`:
 
 | Contract          | Purpose                                                        | Backend options      |
 | ----------------- | -------------------------------------------------------------- | -------------------- |

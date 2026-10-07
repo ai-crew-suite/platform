@@ -15,13 +15,13 @@
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { mockServices } from '@backstage/backend-test-utils';
-import { QualityScorecardsDriver } from '@ai-crew-suite/plugin-kernel-node';
+import { QualityScorecardsDriver } from '@ai-crew-suite/plugin-platform-node';
 import { createQualityScorecardsTools } from '../registerTools';
 
 describe('createQualityScorecardsTools Compilation Suite', () => {
   let mockDriver: QualityScorecardsDriver;
   const logger = mockServices.logger.mock();
-  const mockCtx = {} as any; 
+  const mockCtx = {} as any;
 
   beforeEach(() => {
     mockDriver = {

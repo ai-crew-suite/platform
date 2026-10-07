@@ -16,7 +16,7 @@
 import {
   CreateCloudProviderToolsOptions,
   ToolDefinition,
-} from '@ai-crew-suite/plugin-kernel-node';
+} from '@ai-crew-suite/plugin-platform-node';
 
 /** Creates typed, read-only AI Core tools that delegate to the active cloud driver. */
 export const createCloudProviderTools = (

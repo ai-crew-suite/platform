@@ -28,7 +28,7 @@ import {
   RunStore,
   SessionMessage,
   SessionStore,
-} from '@ai-crew-suite/plugin-kernel-node';
+} from '@ai-crew-suite/plugin-platform-node';
 
 /**
  * Normalizes JSON values returned by different PostgreSQL drivers.

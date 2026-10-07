@@ -33,7 +33,7 @@ By breaking the file into a strict interface contract and an explicit provider i
 
 ```typescript
 // plugins/kernel/backend/src/storage/ToolRegistry.ts
-import { Tool } from '@ai-crew-suite/plugin-kernel-node';
+import { Tool } from '@ai-crew-suite/plugin-platform-node';
 
 /**
  * Core storage boundary defining the pluggable lifecycle of Tool Registry discovery.
@@ -53,7 +53,7 @@ export interface ToolRegistry {
 // plugins/kernel/backend/src/storage/InMemoryToolRegistry.ts
 import { LoggerService } from '@backstage/backend-plugin-api';
 import { ConflictError } from '@backstage/errors';
-import { Tool } from '@ai-crew-suite/plugin-kernel-node';
+import { Tool } from '@ai-crew-suite/plugin-platform-node';
 import { ToolRegistry } from './ToolRegistry';
 
 /**
@@ -116,7 +116,7 @@ By initializing a stateless extension bucket during the Backstage collection pha
 
 ```typescript
 // plugins/kernel/backend/src/databases/tool-registry/types.ts
-import { Tool } from '@ai-crew-suite/plugin-kernel-node';
+import { Tool } from '@ai-crew-suite/plugin-platform-node';
 
 /**
  * Storage seam contract for tool registry inventories.
@@ -136,7 +136,7 @@ export interface ToolRegistryStore {
 import { Knex } from 'knex';
 import { LoggerService } from '@backstage/backend-plugin-api';
 import { ConflictError, NotFoundError } from '@backstage/errors';
-import { Tool } from '@ai-crew-suite/plugin-kernel-node';
+import { Tool } from '@ai-crew-suite/plugin-platform-node';
 import { ToolRegistryStore } from './types';
 
 /**
@@ -199,7 +199,7 @@ This demonstrates how to structure `plugin.ts` to manage the collection phase sa
 ```typescript
 // plugins/kernel/backend/src/plugin.ts
 import { createBackendPlugin, coreServices } from '@backstage/backend-plugin-api';
-import { toolExtensionPoint, ToolDefinition } from '@ai-crew-suite/plugin-kernel-node';
+import { toolExtensionPoint, ToolDefinition } from '@ai-crew-suite/plugin-platform-node';
 import { DatabaseCapabilityStore } from './storage/tool-registry/DatabaseCapabilityStore';
 import { createAiBackendServices } from './service';
 import { createRouter } from './api/router';

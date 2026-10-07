@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 import { Config } from '@backstage/config';
-import { CloudProvidersConfig } from '@ai-crew-suite/plugin-kernel-node';
+import { CloudProvidersConfig } from '@ai-crew-suite/plugin-platform-node';
 
 export const readCloudProvidersConfig = (
   config: Config,

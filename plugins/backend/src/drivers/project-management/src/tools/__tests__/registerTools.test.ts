@@ -17,7 +17,7 @@ import { mockServices } from '@backstage/backend-test-utils';
 import {
   ProjectManagementDriver,
   ToolContext,
-} from '@ai-crew-suite/plugin-kernel-node';
+} from '@ai-crew-suite/plugin-platform-node';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createProjectManagementTools } from '../registerTools';
 

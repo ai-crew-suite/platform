@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 import { LoggerService } from '@backstage/backend-plugin-api';
-import { ToolDefinition } from '@ai-crew-suite/plugin-kernel-node';
+import { ToolDefinition } from '@ai-crew-suite/plugin-platform-node';
 import {
   ReadFileArgs,
   GetMetadataArgs,
   SearchRepositoryArgs,
   ListPullRequestsArgs,
   VcsDriver,
-} from '@ai-crew-suite/plugin-kernel-node'
+} from '@ai-crew-suite/plugin-platform-node'
 
 export const createVcsTools = (opts: {
   driver: VcsDriver;

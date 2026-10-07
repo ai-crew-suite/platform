@@ -18,4 +18,4 @@ export {
   incidentManagementDriversExtensionPoint,
   type IncidentManagementDriver,
   type IncidentManagementDriversExtensionPoint,
-} from '@ai-crew-suite/plugin-kernel-node';
+} from '@ai-crew-suite/plugin-platform-node';

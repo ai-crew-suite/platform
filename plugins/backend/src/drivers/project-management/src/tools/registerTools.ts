@@ -19,7 +19,7 @@ import {
   ProjectManagementDriver,
   TicketSearchQuery,
   ToolDefinition,
-} from '@ai-crew-suite/plugin-kernel-node';
+} from '@ai-crew-suite/plugin-platform-node';
 
 export interface CreateProjectManagementToolsOptions {
   driver: ProjectManagementDriver;

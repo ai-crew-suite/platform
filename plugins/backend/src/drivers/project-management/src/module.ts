@@ -18,7 +18,7 @@ import {
   ProjectManagementDriver,
   projectManagementDriversExtensionPoint,
   toolExtensionPoint,
-} from '@ai-crew-suite/plugin-kernel-node';
+} from '@ai-crew-suite/plugin-platform-node';
 import { readProjectManagementConfig } from './config';
 import { createProjectManagementTools } from './tools';
 

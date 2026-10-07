@@ -19,7 +19,7 @@ import {
   ToolExtensionPoint,
   projectManagementDriversExtensionPoint,
   toolExtensionPoint,
-} from '@ai-crew-suite/plugin-kernel-node';
+} from '@ai-crew-suite/plugin-platform-node';
 import { describe, expect, it, vi } from 'vitest';
 import { aiCoreBackendModuleProjectManagement } from '../module';
 

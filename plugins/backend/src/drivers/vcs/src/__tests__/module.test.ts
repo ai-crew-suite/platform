@@ -15,8 +15,8 @@
  */
 import { startTestBackend, mockServices } from '@backstage/backend-test-utils';
 import { createBackendPlugin, createBackendModule } from '@backstage/backend-plugin-api';
-import { toolExtensionPoint } from '@ai-crew-suite/plugin-kernel-node';
-import { vcsDriversExtensionPoint } from '@ai-crew-suite/plugin-kernel-node';
+import { toolExtensionPoint } from '@ai-crew-suite/plugin-platform-node';
+import { vcsDriversExtensionPoint } from '@ai-crew-suite/plugin-platform-node';
 import { describe, expect, it, vi } from 'vitest';
 import { aiCoreBackendModuleVcs } from '../module';
 
@@ -85,8 +85,8 @@ describe('aiCoreBackendModuleVcs', () => {
     await expect(
       startTestBackend({
         features: [
-          mockAiCorePlugin, 
-          aiCoreBackendModuleVcs, 
+          mockAiCorePlugin,
+          aiCoreBackendModuleVcs,
           inlineMockDriverModule,
           mockServices.rootConfig.factory({ data: configData }),
           mockServices.logger.factory(),

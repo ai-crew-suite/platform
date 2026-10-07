@@ -18,7 +18,7 @@ import {
   toolExtensionPoint,
   qualityScorecardsExtensionPoint,
   QualityScorecardsDriver
-} from '@ai-crew-suite/plugin-kernel-node';
+} from '@ai-crew-suite/plugin-platform-node';
 import { readQualityScorecardsConfig } from './config';
 import { createQualityScorecardsTools } from './registerTools';
 

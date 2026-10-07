@@ -21,7 +21,7 @@ import {
   toolExtensionPoint,
   qualityScorecardsExtensionPoint,
   QualityScorecardsDriver
-} from '@ai-crew-suite/plugin-kernel-node';
+} from '@ai-crew-suite/plugin-platform-node';
 import { aiCoreBackendModuleQualityScorecards } from '../module';
 
 describe('aiCoreBackendModuleQualityScorecards Orchestration', () => {
@@ -81,8 +81,8 @@ describe('aiCoreBackendModuleQualityScorecards Orchestration', () => {
 
     await startTestBackend({
       features: [
-        aiCoreBackendModuleQualityScorecards, 
-        driverInterceptor, 
+        aiCoreBackendModuleQualityScorecards,
+        driverInterceptor,
         toolInterceptor,
         configFactory
       ],

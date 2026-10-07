@@ -18,7 +18,7 @@ import {
   ObservabilityDriver,
   observabilityDriversExtensionPoint,
   toolExtensionPoint,
-} from '@ai-crew-suite/plugin-kernel-node';
+} from '@ai-crew-suite/plugin-platform-node';
 import { readObservabilityConfig } from './config';
 import { createObservabilityTools } from './tools';
 

@@ -25,7 +25,7 @@ import type {
   CheckpointStore,
   RunStore,
   SessionStore,
-} from '@ai-crew-suite/plugin-kernel-node';
+} from '@ai-crew-suite/plugin-platform-node';
 import { readRuntimeStoresConfig } from '../config';
 import { applyDatabaseMigrations } from '../database/migrations';
 import { RedisCheckpointStore } from './RedisCheckpointStore';

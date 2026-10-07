@@ -17,7 +17,7 @@ import {
   coreServices,
   createBackendPlugin,
 } from '@backstage/backend-plugin-api';
-import { runtimeStoreExtensionPoint } from '@ai-crew-suite/plugin-kernel-node';
+import { runtimeStoreExtensionPoint } from '@ai-crew-suite/plugin-platform-node';
 import { createAgentRuntimeStores } from './service';
 
 /**

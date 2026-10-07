@@ -53,7 +53,7 @@
     "typecheck": "yarn sync-config-types && crew typecheck"
   },
   "dependencies": {
-    "@ai-crew-suite/plugin-kernel-node": "workspace:^",
+    "@ai-crew-suite/plugin-platform-node": "workspace:^",
     "@backstage/backend-common": "catalog:prod",
     "@backstage/backend-defaults": "backstage:^",
     "@backstage/backend-plugin-api": "backstage:^",

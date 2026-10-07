@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 export { aiCoreBackendModuleProjectManagement as default } from './module';
-export { projectManagementDriversExtensionPoint } from '@ai-crew-suite/plugin-kernel-node';
+export { projectManagementDriversExtensionPoint } from '@ai-crew-suite/plugin-platform-node';
 export type {
   ProjectManagementDriver,
   ProjectManagementDriversExtensionPoint,
-} from '@ai-crew-suite/plugin-kernel-node';
+} from '@ai-crew-suite/plugin-platform-node';

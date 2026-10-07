@@ -16,7 +16,7 @@
  */
 import { LoggerService } from '@backstage/backend-plugin-api';
 import { ConflictError } from '@backstage/errors';
-import { Tool, ToolRegistry } from '@ai-crew-suite/plugin-kernel-node';
+import { Tool, ToolRegistry } from '@ai-crew-suite/plugin-platform-node';
 
 /**
  * Enterprise-grade in-memory Tool Registry providing runtime immutability gates.

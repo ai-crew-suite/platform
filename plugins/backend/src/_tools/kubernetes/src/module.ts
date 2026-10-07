@@ -18,7 +18,7 @@ import {
   KubernetesDiagnosticsDriver,
   kubernetesDiagnosticsDriversExtensionPoint,
   toolExtensionPoint,
-} from '@ai-crew-suite/plugin-kernel-node';
+} from '@ai-crew-suite/plugin-platform-node';
 import { readKubernetesConfig } from './config';
 import { createKubernetesDiagnosticsTools } from './tools';
 

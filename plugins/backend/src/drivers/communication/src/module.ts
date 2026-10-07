@@ -18,7 +18,7 @@ import {
   CommunicationDriver,
   communicationDriversExtensionPoint,
   toolExtensionPoint,
-} from '@ai-crew-suite/plugin-kernel-node';
+} from '@ai-crew-suite/plugin-platform-node';
 import { readCommunicationConfig } from './config';
 import { createCommunicationTools } from './tools';
 

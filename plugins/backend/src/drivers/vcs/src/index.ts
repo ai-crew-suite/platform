@@ -16,7 +16,7 @@
 export { aiCoreBackendModuleVcs as default } from './module';
 export {
   vcsDriversExtensionPoint,
-} from '@ai-crew-suite/plugin-kernel-node';
+} from '@ai-crew-suite/plugin-platform-node';
 export type {
   VcsDriversExtensionPoint,
-} from '@ai-crew-suite/plugin-kernel-node';
+} from '@ai-crew-suite/plugin-platform-node';

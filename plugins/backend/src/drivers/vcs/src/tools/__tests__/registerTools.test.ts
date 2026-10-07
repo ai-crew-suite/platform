@@ -15,7 +15,7 @@
  */
 import { describe, expect, it, vi } from 'vitest';
 import { createVcsTools } from '../registerTools';
-import { VcsDriver } from '@ai-crew-suite/plugin-kernel-node';
+import { VcsDriver } from '@ai-crew-suite/plugin-platform-node';
 
 const createMockDriver = (overrides: Partial<VcsDriver> = {}): VcsDriver => ({
   providerId: 'github',

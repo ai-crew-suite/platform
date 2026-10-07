@@ -22,7 +22,7 @@ import {
   toolExtensionPoint,
   VcsDriver,
   vcsDriversExtensionPoint,
-} from '@ai-crew-suite/plugin-kernel-node';
+} from '@ai-crew-suite/plugin-platform-node';
 import { createVcsTools } from './tools';
 
 /**
