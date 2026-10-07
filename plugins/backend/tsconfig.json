@@ -2,5 +2,10 @@
   "extends": "@ai-crew-suite/typescript-shared-config/node",
   "compilerOptions": {
     "outDir": "../../../dist-types/plugins/kernel/backend"
-  }
+  },
+  "references": [
+    {
+      "path": "../node"
+    }
+  ]
 }

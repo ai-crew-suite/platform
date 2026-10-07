@@ -2,10 +2,20 @@
   "extends": "@ai-crew-suite/typescript-shared-config/node",
   "files": [],
   "references": [
-    { "path": "./packages/app" },
-    { "path": "./packages/backend" },
-    { "path": "./plugins/backend" },
-    { "path": "./plugins/components" },
-    { "path": "./plugins/node" }
+    {
+      "path": "./packages/app"
+    },
+    {
+      "path": "./packages/backend"
+    },
+    {
+      "path": "./plugins/backend"
+    },
+    {
+      "path": "./plugins/components"
+    },
+    {
+      "path": "./plugins/node"
+    }
   ]
 }
