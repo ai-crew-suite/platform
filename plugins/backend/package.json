@@ -54,7 +54,7 @@
   },
   "dependencies": {
     "@ai-crew-suite/plugin-kernel-node": "workspace:^",
-    "@backstage/backend-common": "catalog:backstage-backend-common",
+    "@backstage/backend-common": "catalog:prod",
     "@backstage/backend-defaults": "backstage:^",
     "@backstage/backend-plugin-api": "backstage:^",
     "@backstage/config": "backstage:^",
@@ -66,7 +66,8 @@
     "zod": "catalog:prod"
   },
   "devDependencies": {
-    "@ai-crew-suite/cli": "catalog:dev",
+    "@ai-crew-suite/crew-cli": "catalog:dev",
+    "@ai-crew-suite/typescript-shared-config": "catalog:dev",
     "@jest/globals": "catalog:dev",
     "@types/compression": "catalog:dev",
     "@types/express": "catalog:dev",

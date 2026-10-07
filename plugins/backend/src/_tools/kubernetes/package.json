@@ -54,8 +54,8 @@
     "@backstage/config": "backstage:^"
   },
   "devDependencies": {
-    "@ai-crew-suite/cli": "catalog:dev",
+    "@ai-crew-suite/crew-cli": "catalog:dev",
     "@backstage/backend-test-utils": "backstage:^",
-    "vitest": "catalog:vitest"
+    "vitest": "catalog:dev"
   }
 }

@@ -32,5 +32,11 @@
       "master-catalogs.yml"
     ]
   },
-  "yaml.validate": true
+  "yaml.validate": true,
+  "cSpell.words": [
+    "ioredis",
+    "jsdom",
+    "knex",
+    "msgpackr"
+  ]
 }

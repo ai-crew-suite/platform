@@ -57,7 +57,8 @@
     "zod": "catalog:prod"
   },
   "devDependencies": {
-    "@ai-crew-suite/cli": "catalog:dev",
-    "vitest": "catalog:vitest"
+    "@ai-crew-suite/crew-cli": "catalog:dev",
+    "@ai-crew-suite/typescript-shared-config": "catalog:dev",
+    "vitest": "catalog:dev"
   }
 }

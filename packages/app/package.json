@@ -1,6 +1,5 @@
 {
-  "name": "dev-app",
-  "version": "0.0.0",
+  "name": "platform-app",
   "private": true,
   "bundled": true,
   "license": "Apache-2.0",
@@ -77,7 +76,8 @@
     "react-router-dom": "catalog:prod"
   },
   "devDependencies": {
-    "@ai-crew-suite/cli": "catalog:dev",
+    "@ai-crew-suite/crew-cli": "catalog:dev",
+    "@ai-crew-suite/typescript-shared-config": "catalog:dev",
     "@backstage/frontend-test-utils": "backstage:^",
     "@playwright/test": "catalog:dev",
     "@testing-library/dom": "catalog:dev",

@@ -1,8 +1,6 @@
 {
-  "extends": "../../../tsconfig.base.json",
+  "extends": "@ai-crew-suite/typescript-shared-config/node",
   "compilerOptions": {
-    "outDir": "../../../dist-types/plugins/kernel/node",
-    "rootDir": "."
-  },
-  "references": []
+    "outDir": "../../../dist-types/plugins/kernel/node"
+  }
 }

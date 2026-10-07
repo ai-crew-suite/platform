@@ -6,7 +6,7 @@
     "node": "22 || 24",
     "npm": "Please use Yarn instead (Corepack enable)"
   },
-  "packageManager": "yarn@4.18.0",
+  "packageManager": "yarn@4.18.1",
   "workspaces": [
     "packages/*",
     "plugins/**/*"
@@ -68,7 +68,8 @@
     "venv:setup": "yarn venv:make && yarn venv:install"
   },
   "devDependencies": {
-    "@ai-crew-suite/cli": "catalog:dev",
+    "@ai-crew-suite/crew-cli": "catalog:dev",
+    "@ai-crew-suite/typescript-shared-config": "catalog:dev",
     "@backstage/cli": "backstage:^",
     "@backstage/cli-defaults": "backstage:^",
     "@backstage/cli-module-new": "backstage:^",
@@ -80,13 +81,13 @@
     "http-server": "catalog:dev",
     "husky": "catalog:dev",
     "lint-staged": "catalog:dev",
-    "only-allow": "^1.2.2",
+    "only-allow": "catalog:dev",
     "prettier": "catalog:dev",
-    "prop-types": "^15.8.1",
+    "prop-types": "catalog:dev",
     "storybook": "catalog:dev",
     "turbo": "catalog:dev",
     "typescript": "catalog:dev",
-    "whatwg-fetch": "^3.6.20"
+    "whatwg-fetch": "catalog:dev"
   },
   "resolutions": {
     "@types/node": "^26.1.1",
@@ -101,5 +102,5 @@
     "*.{json,md,css,scss}": [
       "prettier --write"
     ]
-  },
+  }
 }
