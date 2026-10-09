@@ -34,9 +34,19 @@
   },
   "yaml.validate": true,
   "cSpell.words": [
+    "aiplatform",
+    "azureai",
+    "cosinesimil",
+    "FAISS",
+    "hnsw",
     "ioredis",
     "jsdom",
     "knex",
-    "msgpackr"
+    "Milvus",
+    "msgpackr",
+    "pgvector",
+    "qdrant",
+    "SARIF",
+    "zilliz"
   ]
 }

@@ -1,0 +1,61 @@
+{
+  "name": "@ai-crew-suite/plugin-platform-components-react",
+  "description": "Core TypeScript definitions and type-safe SSE event models for the AI Crew Suite platform layer.",
+  "version": "0.0.1",
+  "main": "dist/index.esm.js",
+  "types": "dist/index.d.ts",
+  "license": "Apache-2.0",
+  "keywords": [
+    "backstage",
+    "backstage-plugin",
+    "frontend",
+    "webstack-builders",
+    "ai-crew-suite",
+    "ai-core"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "main": "dist/index.esm.js",
+    "types": "dist/index.d.ts"
+  },
+  "backstage": {
+    "role": "web-library",
+    "pluginId": "platform-components"
+  },
+  "bugs": {
+    "url": "https://github.com/ai-crew-suite/platform/issues",
+    "email": "support@ai-crew-suite.dev"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ai-crew-suite/platform",
+    "directory": "plugins/components"
+  },
+  "files": [
+    "dist"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "build": "crew build",
+    "clean": "crew clean",
+    "lint": "crew lint",
+    "test:e2e": "crew test:e2e",
+    "test:unit": "crew test:unit",
+    "test:unit:coverage": "crew test:unit:coverage",
+    "typecheck": "crew typecheck"
+  },
+  "dependencies": {
+    "@backstage/core-components": "backstage:^",
+    "@backstage/core-plugin-api": "backstage:^",
+    "@backstage/frontend-plugin-api": "backstage:^",
+    "eventsource-parser": "catalog:prod"
+  },
+  "devDependencies": {
+    "@ai-crew-suite/crew-cli": "catalog:dev",
+    "@ai-crew-suite/typescript-shared-config": "catalog:dev",
+    "@backstage/dev-utils": "backstage:^",
+    "@backstage/test-utils": "backstage:^",
+    "@testing-library/user-event": "catalog:dev",
+    "vitest": "catalog:dev"
+  }
+}

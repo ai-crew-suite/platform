@@ -1,0 +1,64 @@
+{
+  "name": "@ai-crew-suite/plugin-vector-store-node",
+  "description": "Vector Store Node plugin for the AI Crew Suite platform.",
+  "version": "0.0.1",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "license": "Apache-2.0",
+  "keywords": [
+    "backstage",
+    "backstage-plugin",
+    "backend",
+    "ai-crew-suite",
+    "ai-orchestration",
+    "langgraph",
+    "multi-agent",
+    "rag",
+    "extension-points"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "backstage": {
+    "role": "node-library",
+    "pluginId": "vector-store",
+    "pluginPackage": [
+      "@ai-crew-suite/plugin-vector-store-backend",
+      "@ai-crew-suite/plugin-vector-store-node"
+    ]
+  },
+  "bugs": {
+    "url": "https://github.com/ai-crew-suite/platform",
+    "email": "support@ai-crew-suite.dev"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ai-crew-suite/platform",
+    "directory": "plugins/vector-store-node"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "crew build",
+    "clean": "crew clean",
+    "lint": "crew lint",
+    "test:e2e": "crew test:e2e",
+    "test:unit": "crew test:unit",
+    "test:unit:coverage": "crew test:unit:coverage",
+    "typecheck": "crew typecheck"
+  },
+  "dependencies": {
+    "@backstage/backend-plugin-api": "backstage:^",
+    "@backstage/errors": "backstage:^",
+    "@backstage/integration": "backstage:^",
+    "i18next": "catalog:prod",
+    "zod": "catalog:prod"
+  },
+  "devDependencies": {
+    "@ai-crew-suite/crew-cli": "catalog:dev",
+    "@ai-crew-suite/typescript-shared-config": "catalog:dev",
+    "vitest": "catalog:dev"
+  }
+}

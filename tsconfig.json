@@ -9,13 +9,19 @@
       "path": "./packages/backend"
     },
     {
-      "path": "./plugins/backend"
+      "path": "./plugins/components-react"
     },
     {
-      "path": "./plugins/components"
+      "path": "./plugins/platform-backend"
     },
     {
-      "path": "./plugins/node"
+      "path": "./plugins/platform-node"
+    },
+    {
+      "path": "./plugins/vector-store-backend"
+    },
+    {
+      "path": "./plugins/vector-store-node"
     }
   ]
 }
