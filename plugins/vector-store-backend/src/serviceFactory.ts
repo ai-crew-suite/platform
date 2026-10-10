@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// plugins/vector-store-backend/src/serviceFactory.ts
 import {
   createServiceFactory,
   coreServices,

@@ -54,7 +54,7 @@
   },
   "dependencies": {
     "@ai-crew-suite/plugin-platform-node": "workspace:^",
-    "@backstage/backend-common": "catalog:prod",
+    "@backstage/backend-common": "^0.25.0",
     "@backstage/backend-defaults": "backstage:^",
     "@backstage/backend-plugin-api": "backstage:^",
     "@backstage/config": "backstage:^",

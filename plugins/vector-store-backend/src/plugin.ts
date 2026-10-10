@@ -20,10 +20,8 @@ import { VectorProviderRegistry } from './serviceFactory';
 export const vectorStorePlugin = createBackendPlugin({
   pluginId: 'vector-store',
   async register(env) {
-    // Expose the formal Extension Point externally to the platform ecosystem
     env.registerExtensionPoint(vectorStoreExtensionPoint, {
       registerProvider(type, builder) {
-        // Route the third-party driver into our factory memory registry matrix
         VectorProviderRegistry.register(type, builder);
       },
     });
