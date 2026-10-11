@@ -2,10 +2,24 @@
   "$schema": "https://raw.githubusercontent.com/streetsidesoftware/cspell/main/cspell.schema.json",
   "version": "0.2",
   "words": [
+    "aiplatform",
+    "azureai",
+    "cosinesimil",
+    "FAISS",
     "FINRA",
+    "hnsw",
+    "ioredis",
     "jiti",
+    "jsdom",
+    "knex",
+    "Milvus",
+    "msgpackr",
+    "pgvector",
+    "qdrant",
     "rjsf",
+    "SARIF",
     "vercel",
-    "vite"
+    "vite",
+    "zilliz"
   ]
 }
