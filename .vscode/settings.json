@@ -37,8 +37,5 @@
       "master-catalogs.yml"
     ]
   },
-  "yaml.validate": true,
-  "cSpell.words": [
-
-  ]
+  "yaml.validate": true
 }
