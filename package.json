@@ -33,6 +33,8 @@
   },
   "devDependencies": {
     "@ai-crew-suite/crew-cli": "catalog:dev",
+    "@ai-crew-suite/dependencies-frontend": "catalog:dev",
+    "@ai-crew-suite/dependencies-backend": "catalog:dev",
     "@ai-crew-suite/typescript-shared-config": "catalog:dev",
     "@backstage/cli": "backstage:^",
     "@backstage/cli-defaults": "backstage:^",
