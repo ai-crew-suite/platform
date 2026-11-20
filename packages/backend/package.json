@@ -1,0 +1,44 @@
+{
+  "name": "@ai-crew-suite/platform-backend",
+  "description": "An isolated, non-published local validation sandbox and testpad for testing the platform backend dev server.",
+  "private": true,
+  "license": "Apache-2.0",
+  "keywords": [
+    "agentic workflow",
+    "ai-crew-suite",
+    "backstage",
+    "backstage-backend",
+    "testpad",
+    "sandbox",
+    "integration-testing",
+    "code-coverage",
+    "hermetic-testing"
+  ],
+  "backstage": {
+    "role": "backend-plugin"
+  },
+  "bugs": {
+    "url": "https://github.com/ai-crew-suite/platform/issues",
+    "email": "support@ai-crew-suite.dev"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ai-crew-suite/platform",
+    "directory": "packages/backend"
+  },
+  "scripts": {
+    "format": "backstage-cli crew format",
+    "lint": "backstage-cli crew lint",
+    "start": "backstage-dev-backend",
+    "typecheck": "backstage-cli crew typecheck"
+  },
+  "dependencies": {
+    "@ai-crew-suite/presets-backend": "catalog:prod",
+    "@backstage/catalog-model": "backstage:^"
+  },
+  "devDependencies": {
+    "@ai-crew-suite/typescript-shared-config": "catalog:dev",
+    "@backstage/cli": "backstage:^",
+    "vitest": "catalog:dev"
+  }
+}

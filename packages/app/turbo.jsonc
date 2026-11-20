@@ -1,0 +1,35 @@
+{
+  "extends": ["//"],
+  "tasks": {
+    "format": {
+      "cache": false,
+      "persistent": true
+    },
+    "lint": {
+      "cache": true,
+      "dependsOn": [],
+      "inputs": [
+        "dev/**",
+        "src/**",
+        "package.json",
+        "tsconfig.json"
+      ],
+      "outputs": []
+    },
+    "start": {
+      "cache": false,
+      "persistent": true
+    },
+    "typecheck": {
+      "cache": true,
+      "dependsOn": [],
+      "inputs": [
+        "dev/**",
+        "src/**",
+        "package.json",
+        "tsconfig.json"
+      ],
+      "outputs": []
+    }
+  }
+}

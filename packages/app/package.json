@@ -1,0 +1,46 @@
+{
+  "name": "@ai-crew-suite/platform-app",
+  "description": "An isolated, non-published local validation workspace and browser testpad executing UI/UX integration runs, visual sweeps, and hot-reloading diagnostics against the Backstage frontend application shell.",
+  "version": "0.0.1",
+  "license": "Apache-2.0",
+  "private": true,
+  "backstage": {
+    "role": "frontend-plugin"
+  },
+  "keywords": [
+    "agentic workflow",
+    "ai-crew-suite",
+    "app",
+    "backstage",
+    "backstage-frontend",
+    "testpad",
+    "sandbox",
+    "ui-testing",
+    "component-playground",
+    "hot-reload",
+    "visual-regression"
+  ],
+  "bugs": {
+    "url": "https://github.com/ai-crew-suite/platform/issues",
+    "email": "support@ai-crew-suite.dev"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ai-crew-suite/platform",
+    "directory": "packages/app"
+  },
+  "scripts": {
+    "format": "backstage-cli crew format",
+    "lint": "backstage-cli crew lint",
+    "start": "backstage-dev-frontend",
+    "typecheck": "backstage-cli crew typecheck"
+  },
+  "dependencies": {
+    "@ai-crew-suite/presets-app": "catalog:prod"
+  },
+  "devDependencies": {
+    "@ai-crew-suite/typescript-shared-config": "catalog:dev",
+    "@backstage/cli": "backstage:^",
+    "vitest": "catalog:dev"
+  }
+}

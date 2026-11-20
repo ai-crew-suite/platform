@@ -4,16 +4,11 @@ In an enterprise platform designed for strict compliance (**FINRA, HIPAA, SOC-2*
 
 ## Tool Registry Implementations
 
-These could be handled relying on whatever the end user has configured for Backstage cache:
-
 - **Memory-Backed Tool Registry**: Stores tool schemas and metadata in-memory. Suitable for local development or basic pipelines.
+- **Database-Backed Tool Registry (SQL/Knex)**: Stores tool schemas and metadata directly in PostgreSQL. This allows operators to change or turn off tool configurations dynamically via a UI without needing to redeploy backend containers.
 - **Redis-Cached / Distributed Tool Registry**: Syncs tool schemas and metadata across ephemeral server instances, ensuring that horizontally scaled clusters look up tools with minimal network lag.
 
-We could have a config option to toggle from cache to a database backed store:
-
-- **Database-Backed Tool Registry (SQL/Knex)**: Stores tool schemas and metadata directly in PostgreSQL. This allows operators to change or turn off tool configurations dynamically via a UI without needing to redeploy backend containers.
-
-FOR THIS: see the permissions / rbac document for a perspective that says we shouldn't do this. **RBAC Policy-Enforced Tool Registry**: Wraps an underlying tool map and cross-references lookups against an external authorization engine (such as **Open Policy Agent (OPA)**) or Backstage roles before even revealing that a tool exists.
+**RBAC Policy-Enforced Tool Registry**: Wraps an underlying tool map and cross-references lookups against an external authorization engine (such as **Open Policy Agent (OPA)**) or Backstage roles before even revealing that a tool exists.
 
 ## The Recommendation: Promote to an "Active Boot Security Gate"
 
@@ -31,9 +26,14 @@ By breaking the file into a strict interface contract and an explicit provider i
 
 ### 1. The Core Interface Specification
 
+`ToolRegistry.ts` (The Tool Registry Inventory)
+
+- **What it does:** It handles the live collection and schema matching for all available agent tools.
+- **The Mission:** It holds the list of action modules that agents are allowed to run (e.g., executing a Kubernetes cluster scan or sending a Slack message). It validates these tools using standard Zod parameter footprints and manages their execution contexts without ever touching database state serialization or encryption workflows.
+
 ```typescript
 // plugins/kernel/backend/src/storage/ToolRegistry.ts
-import { Tool } from '@ai-crew-suite/plugin-platform-node';
+import { Tool } from '@ai-crew-suite/plugin-kernel-node';
 
 /**
  * Core storage boundary defining the pluggable lifecycle of Tool Registry discovery.
@@ -53,7 +53,7 @@ export interface ToolRegistry {
 // plugins/kernel/backend/src/storage/InMemoryToolRegistry.ts
 import { LoggerService } from '@backstage/backend-plugin-api';
 import { ConflictError } from '@backstage/errors';
-import { Tool } from '@ai-crew-suite/plugin-platform-node';
+import { Tool } from '@ai-crew-suite/plugin-kernel-node';
 import { ToolRegistry } from './ToolRegistry';
 
 /**
@@ -116,7 +116,7 @@ By initializing a stateless extension bucket during the Backstage collection pha
 
 ```typescript
 // plugins/kernel/backend/src/databases/tool-registry/types.ts
-import { Tool } from '@ai-crew-suite/plugin-platform-node';
+import { Tool } from '@ai-crew-suite/plugin-kernel-node';
 
 /**
  * Storage seam contract for tool registry inventories.
@@ -136,7 +136,7 @@ export interface ToolRegistryStore {
 import { Knex } from 'knex';
 import { LoggerService } from '@backstage/backend-plugin-api';
 import { ConflictError, NotFoundError } from '@backstage/errors';
-import { Tool } from '@ai-crew-suite/plugin-platform-node';
+import { Tool } from '@ai-crew-suite/plugin-kernel-node';
 import { ToolRegistryStore } from './types';
 
 /**
@@ -199,7 +199,7 @@ This demonstrates how to structure `plugin.ts` to manage the collection phase sa
 ```typescript
 // plugins/kernel/backend/src/plugin.ts
 import { createBackendPlugin, coreServices } from '@backstage/backend-plugin-api';
-import { toolExtensionPoint, ToolDefinition } from '@ai-crew-suite/plugin-platform-node';
+import { toolExtensionPoint, ToolDefinition } from '@ai-crew-suite/plugin-kernel-node';
 import { DatabaseCapabilityStore } from './storage/tool-registry/DatabaseCapabilityStore';
 import { createAiBackendServices } from './service';
 import { createRouter } from './api/router';
@@ -271,34 +271,3 @@ export const ragAiPlugin = createBackendPlugin({
 - **Zero Circular Reference Risk**: The staging array acts as an intermediary, collecting definitions safely during startup so that storage allocation happens linearly.
 - **Production-Grade Audit Readiness**: Tool structures are backed by a persistent database schema, allowing compliance teams to easily run retention reviews or review modification logs.
 
-## 🗺️ System Blueprint Relationship
-
-```
-                     ┌───────────────────────────┐
-                     │    createRouter/Factory   │
-                     └─────────────┬─────────────┘
-                                   │ (Wires up both dependencies)
-            ┌──────────────────────┴──────────────────────┐
-            ▼                                             ▼
-┌───────────────────────┐                    ┌─────────────────────────┐
-│   StateSerializer     │                    │      ToolRegistry       │
-├───────────────────────┤                    ├─────────────────────────┤
-│ • Cryptographic Vault │                    │ • Tool Packing Registry │
-│ • Encrypts Checkpoints│                    │ • Functional Executors  │
-│ • Handles KMS Secrets │                    │ • Zod Parameter Schemas │
-└───────────────────────┘                    └─────────────────────────┘
-```
-
-When you look at **Step 14** of your notes, it specifies: *"Build `ToolExecutor` ... and wire stores plus `StateSerializer`"* [Step 14]. This is why they were mentioned together—they are both core engine dependencies initialized by the backend startup factory [Step 14].
-
-Now that the structural difference between the **cryptographic state serializer** and the **tool packing registry** is clear, which core system file would you like to refactor next? Let me know if we should proceed with:
-
-1. The **`StateSerializer.ts`** snapshot cipher logic.
-2. The **`ToolRegistry.ts`** packing logic [Step 16].
-
-`ToolRegistry.ts` (The Tool Registry Inventory)
-
-- **What it does:** It handles the live collection and schema matching for all available agent tools [Step 14, Step 16].
-- **The Mission:** It holds the list of action modules that agents are allowed to run (e.g., executing a Kubernetes cluster scan or sending a Slack message) [Step 14, Step 16]. It validates these tools using standard Zod parameter footprints and manages their execution contexts without ever touching database state serialization or encryption workflows [Step 14, Step 16].
-
-------

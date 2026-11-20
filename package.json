@@ -12,26 +12,21 @@
     "plugins/**/*"
   ],
   "scripts": {
-    "build": "turbo build",
-    "build:image": "yarn workspace backend build:image",
+    "build": "turbo run build",
     "clean": "turbo clean",
-    "dev": "turbo start --filter=app --filter=backend --concurrency=10",
-    "lint": "turbo lint",
-    "lint:changed": "turbo lint --filter=[HEAD~1]",
-    "plugin:create": "backstage-cli new --category plugin --scope @ai-crew-suite",
-    "plugin:new": "backstage-cli new --scope @ai-crew-suite",
-    "release": "turbo run lint typecheck test:unit build && yarn dotenv -- crew publish",
+    "lint": "turbo run lint",
+    "start": "backstage-cli workbench compose start",
+    "stop": "backstage-cli workbench compose stop",
     "storybook": "crew storybook",
     "storybook:build": "crew storybook:build",
     "sync": "crew sync:refs",
-    "test": "yarn test:unit && yarn test:e2e && yarn test:unit:coverage",
-    "test:e2e": "crew test:e2e",
+    "test": "yarn test:unit && yarn test:unit:coverage",
     "test:unit": "turbo run test:unit",
     "test:unit:coverage": "turbo run test:unit -- --coverage",
-    "typecheck": "turbo typecheck",
-    "typecheck:full": "turbo typecheck --force"
+    "typecheck": "turbo typecheck"
   },
   "devDependencies": {
+    "@ai-crew-suite/crew-cli": "catalog:dev",
     "@ai-crew-suite/crew-cli": "catalog:dev",
     "@ai-crew-suite/dependencies-frontend": "catalog:dev",
     "@ai-crew-suite/dependencies-backend": "catalog:dev",
@@ -43,17 +38,8 @@
     "@changesets/cli": "catalog:dev",
     "@playwright/test": "catalog:dev",
     "@types/node": "catalog:dev",
-    "concurrently": "catalog:dev",
-    "http-server": "catalog:dev",
-    "husky": "catalog:dev",
-    "lint-staged": "catalog:dev",
-    "only-allow": "catalog:dev",
-    "prettier": "catalog:dev",
-    "prop-types": "catalog:dev",
     "storybook": "catalog:dev",
-    "turbo": "catalog:dev",
-    "typescript": "catalog:dev",
-    "whatwg-fetch": "catalog:dev"
+    "typescript": "catalog:dev"
   },
   "resolutions": {
     "@types/node": "^26.1.1",
@@ -61,13 +47,5 @@
     "@types/react-dom": "^18",
     "got": "11.8.6",
     "typescript": "6.0.3"
-  },
-  "lint-staged": {
-    "*.{js,jsx,ts,tsx,mjs,cjs}": [
-      "eslint --config packages/config-eslint/eslint.monorepo.config.ts --fix"
-    ],
-    "*.{json,md,css,scss}": [
-      "prettier --write"
-    ]
   }
 }

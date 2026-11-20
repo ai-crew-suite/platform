@@ -6,17 +6,7 @@ The **Temporal Worker** is the execution engine. It is a long-running Node.js pr
 
 Here is how the responsibilities are split:
 
-```
-[ Backstage App / Client ]
-         │ (Trigger Workflow via Client SDK)
-         ▼
-[ Temporal Server (Cluster) Container (Port 7233) ] ◄──┐
-         │ (Hosts Task Queues & Orchestrates State)     │ Polls for work /
-         ▼                                              │ Returns results
-[ packages/temporal-worker (The Node Process) ] ────────┘
-   ├── Executes workflows (e.g., AI Crew orchestration loops)
-   └── Executes activities (e.g., Calling Mem0, pulling DB context)
-```
+![temporal-worker-workflow](/home/kevin/Repos/ai-crew-suite/platform/docs/Implementation/images/temporal-worker-workflow.jpg)
 
 ## Functional Breakdown of the Files
 
@@ -178,7 +168,7 @@ export async function extractMem0Context(input: MemoryActivityInput): Promise<st
       query: input.query,
       top_k: 5
     });
-    
+
     // Parse the results out of the custom Mem0 REST framework payload
     const memories = response.data?.results || [];
     return memories.map((m: any) => m.memory).join('\n');
@@ -288,9 +278,8 @@ Here is how to implement the backend plugin endpoint using the modern Backstage 
 
 ### 1. The Backstage Backend Plugin Implementation
 
-`packages/backend/src/plugins/aiCrew.ts`
-
 ```typescript
+packages/backend/src/plugins/aiCrew.ts
 import { createBackendPlugin, coreServices } from '@backstage/backend-plugin-api';
 import { Connection, Client } from '@temporalio/client';
 import { runAiCrewWorkflow } from '@ai-crew-suite/temporal-worker/dist/workflows';
@@ -313,7 +302,7 @@ export const aiCrewBackendPlugin = createBackendPlugin({
         const taskQueue = config.getOptionalString('temporal.taskQueue') || 'ai-crew-tasks';
 
         logger.info(`📡 Connecting to standalone Temporal Cluster at gRPC endpoint: ${temporalAddress}`);
-        
+
         // 3. Establish the persistent gRPC connection channel to the Temporal container
         const connection = await Connection.connect({ address: temporalAddress });
         const client = new Client({ connection });
