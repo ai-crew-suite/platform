@@ -267,6 +267,12 @@ Because horizontally scaled Kubernetes pods cannot rely on local SQLite or Markd
 4. **Object-Storage Tiering (`.jsonl.gz` / `.md`):**
    - Offload oversized tool outputs, browser ARIA snapshots, and archived compliance transcripts as standard gzipped JSONL (`.jsonl.gz`) or Markdown (`.md`) blobs in KMS-encrypted S3/GCS (`tenants/<tenantId>/runs/<runId>/...`), storing only content-addressed URI references and SHA-256 checksums in PostgreSQL.
 
+### Inference vs. Retrieval Storage Ownership
+<!-- Source: incoming/CAPABILITIES_EXTENSION_POINTS.md -->
+
+* **Model and Storage Responsibilities Stay Separate:** Embedding and reranking implementations are inference capabilities; chunking, canonical document persistence, vector indexing, and retrieval orchestration belong to the RAG/storage layer. Retrieval may call registered inference capabilities, but inference provider modules must not create vector stores or take ownership of indexing pipelines.
+* **Keep Embeddings as Rebuildable Projections:** Changing an embedding provider or model can require re-indexing, but must not change canonical document or memory truth; preserve the existing rebuild-from-canonical-data contract.
+
 ### Store-Level TTL Enforcement & Rolling Memory Expiration (`expiresAt`)
 <!-- Source: incoming/WRITING_AN_AGENT.md (Section 34: Data Retention and Sensitive Content Scrubbing) -->
 
@@ -610,37 +616,42 @@ Mem0 provides **no built-in guardrails, PII/PHI redaction, or content filtering*
 When end users create, edit, or delete memories via the Backstage "Manage My Memory" UI, operations must pass through the **Memory Manager** rather than mutating Mem0 or `pgvector` directly:
 
 * **Direct Seeding (`infer: false`):** User-authored custom memories bypass Mem0's LLM extraction parser (`infer: false`) to preserve exact phrasing, while still undergoing ingress safety screening, composite deduplication `(content_hash + scope_tuple)`, and provenance tagging (`source: 'user_manual'`).
-* **Audited Edits (`update`):** Inline text edits re-run ingress safety checks, regenerate the vector embedding, update the canonical row and Mem0 index atomically, and record an audit event (or supersession link) with the user's identity and timestamp.
-* **Transactional Deletion (`delete`):** Single-click user deletions execute the platform's transactional tombstone/erasure flow—revoking the canonical row, nullifying its `pgvector` embedding, purging the Mem0 vector entry, invalidating retrieval caches, and recording an immutable entry in `deletion_events`.
+* **Audited Edits (`update`):** Inline text edits re-run ingress safety checks and record the canonical mutation, audit event, and an idempotent Mem0 synchronization job in one platform database transaction. A worker applies the change to the selected Mem0 backend and records completion or failure; do not assume an atomic transaction spans PostgreSQL and a remote Platform API.
+* **Transactional Deletion (`delete`):** Single-click user deletions first revoke the canonical row and record an immutable `deletion_events` entry in the platform transaction, then perform an idempotent delete against the selected Mem0 backend and invalidate retrieval caches. Track pending or failed remote erasure explicitly rather than reporting a completed cross-system transaction prematurely.
 
-### Self-Hosted Mem0 OSS Capability Gaps & Platform-Owned Equivalents
-<!-- Source: incoming/MEM0.md (Sections: OSS vs. Platform Versions) -->
+### Mem0 API Modes, Shared Contract & Platform-Only Capabilities
+<!-- Sources: https://docs.mem0.ai/platform/platform-vs-oss; https://docs.mem0.ai/open-source/features/rest-api; https://docs.mem0.ai/api-reference -->
 
-Because SOC-2, HIPAA, and FINRA data-residency and BAA requirements prohibit routing sensitive enterprise transcripts to Mem0's multi-tenant SaaS (`app.mem0.ai`), the platform deploys **self-hosted Mem0 OSS** backed by PostgreSQL + `pgvector`. Features exclusive to Mem0 Cloud must be explicitly implemented by our platform control plane and Temporal background workers:
+When governed Mem0 memory is enabled, the platform supports both self-hosted OSS and the managed Mem0 Platform API. The official product documentation identifies a shared core operation set (`add`, `search`, `get`, `get_all`, `update`, `delete`, `delete_all`, and per-memory `history`), but deployment, identity, authentication, filtering, and optional feature surfaces differ.
 
-| Mem0 Cloud-Exclusive Feature               | Self-Hosted OSS Gap                                 | Platform-Owned Architectural Replacement                     |
-| :----------------------------------------- | :-------------------------------------------------- | :----------------------------------------------------------- |
-| **Mem0 Dream (Background Consolidation)**  | Chronological append without periodic consolidation | Scheduled **Temporal Consolidation Workflows** running post-stabilization compression, duplicate collapsing, and supersession reconciliation off the critical chat path. |
-| **Memory Decay & TTL**                     | No built-in expiration engine                       | Record-level `expires_at` / `retention_policy_id` columns enforced at read time and purged by nightly **Retention Sweeper** jobs. |
-| **Multi-Tenant Hierarchy**                 | Flat metadata filtering only                        | Hard relational `tenant_id`, `user_id`, `agent_id` scope columns + PostgreSQL Row-Level Security (RLS) and per-tenant encryption domains. |
-| **Batch Operations & GDPR Data Export**    | Single-item CRUD primitives                         | Transactional SQL batch jobs in the Memory Manager for bulk revocation/erasure (`deletion_events`) and structured JSON/artifact export endpoints. |
-| **Project-Wide Audit Logs**                | Node-local version history only                     | Immutable, append-only `AuditLogSink` recording every promotion, read, supersession, and erasure event across the tenant. |
-| **Custom Categories & Temporal Reasoning** | Static prompt templates                             | Controlled taxonomy (`preference`, `fact`, `episodic`) enforced in our **Promotion Gate** with explicit `effective_from` / `effective_until` temporal columns. |
+| Concern | Managed Mem0 Platform API | Self-Hosted Mem0 OSS API |
+| :-- | :-- | :-- |
+| Hosting and model services | Mem0 operates the vector store, LLM, embedder, and service scaling. | The operator deploys and configures the API, vector store, LLM, embedder, and availability. |
+| Client and REST surface | Platform SDK (`MemoryClient`) and versioned hosted API; requests use `Authorization: Token ...`. | OSS SDK (`Memory` from `mem0ai/oss`) or self-hosted REST routes such as `/memories` and `/search`; REST auth uses `X-API-Key` or JWT. OSS REST paths do not use the hosted API's version prefix. |
+| Scope and tenancy | Supports `user_id`, `agent_id`, `run_id`, and `app_id`, plus organization/project management. | Supports `user_id`, `agent_id`, and `run_id`; it has no `app_id` or organization/project model. Tenant isolation remains a platform responsibility. |
+| Filters and completion | Hosted filters use a fixed field/operator allowlist; add operations can return an event ID for asynchronous completion. | Metadata keys are filterable, but actual operator support depends on the configured vector store; the OSS REST API has its own request and completion behavior. |
+| Optional product capabilities | Includes product-specific features such as Graph Memory, Memory Decay, Temporal Reasoning, Dream, custom categories, webhooks, exports, batch operations, feedback, summaries, project events, and a dashboard. | Some product-specific features are absent; entity-aware ranking does not provide a queryable graph. |
 
-### Two-Stage Self-Healing Memory Loop (OSS Mem0 Pattern)
+* **Explicit Backend Selection and Adapter Boundary:** Resolve `platform` versus `oss` from validated server configuration and route calls through `MemoryStore`; normalize only the shared operations. Keep endpoint paths, SDK types, credentials, filters, and response/event handling inside the selected adapter. Never silently fall back to another backend, since the stores may not contain the same data.
+* **Server-Owned Scope Mapping:** Derive tenant and principal IDs from authenticated platform context. Map them to the selected backend's supported identifiers and filters; never trust model-supplied tenant filters. The OSS mode needs platform-enforced tenant predicates and storage isolation because it has no `app_id` or organization boundary.
+* **Asynchronous Remote Writes:** Treat hosted event IDs and any non-terminal backend result as durable work to poll or reconcile. Commit canonical state, audit records, and idempotent synchronization jobs locally; do not claim atomicity across the platform database and a remote Mem0 service.
+* **Capability Negotiation:** Platform-only features are optional extensions, not part of the shared `MemoryStore` contract. Advertise the selected backend's supported capabilities and fail preflight with an explicit unsupported result when a workflow requires an unavailable feature; do not silently substitute different semantics.
+* **Data-Class and Provider Policy:** Neither deployment mode is universally permitted for every tenant or data class. Route to the managed API only when tenant policy, region, contract, retention, and provider review allow it; otherwise select an approved self-hosted endpoint or fail closed. Do not treat the former blanket SaaS exclusion as a platform rule.
+
+### Two-Stage Memory Feedback and Repair (OSS-Compatible Pattern)
 <!-- Source: incoming/MEM0.md (Sections: Implementing Platform Features in Open Source Version) -->
 
-Because self-hosted Mem0 OSS lacks Mem0 Cloud's managed reinforcement pipeline (`client.feedback()`), the platform implements a **two-stage self-healing loop** combining immediate retrieval down-ranking with asynchronous transactional repair:
+The platform-owned feedback and repair path works across both backends. Mem0 Platform exposes a native feedback operation; OSS does not. Keep the platform's authenticated feedback/audit record authoritative and treat the native Platform operation as an optional adapter capability. The OSS-compatible repair path combines immediate retrieval down-ranking with asynchronous transactional repair:
 
 #### 1. Stage 1: Immediate Metadata Down-Ranking (Synchronous Fast Path)
 When a user submits negative feedback on a surfaced memory from the Backstage UI:
-1. Verify record ownership against `(tenant_id, user_id)` and append a penalty modifier to the record's metadata (`feedback_score` decremented by `0.5` from baseline `1.0`, plus structured `feedback_reasons`).
-2. During hybrid retrieval reranking, multiply raw similarity scores by `clamp(feedback_score, 0.1, 1.0)` (or exclude records below a configured floor) so flagged memories are immediately deprioritized on subsequent turns without waiting for background LLM repair.
+1. Verify record ownership against `(tenant_id, user_id)` and persist a penalty modifier in the platform's canonical record (`feedback_score` decremented by `0.5` from baseline `1.0`, plus structured `feedback_reasons`). Queue any corresponding Mem0 metadata update for backend synchronization.
+2. During hybrid retrieval reranking, apply the canonical penalty to returned candidates by multiplying raw similarity scores by `clamp(feedback_score, 0.1, 1.0)` (or excluding records below a configured floor). This makes flagged memories immediately deprioritized without requiring a synchronous write to either Mem0 API.
 
 #### 2. Stage 2: Asynchronous Transactional Repair (Reconciled Governance Path)
 Rather than mutating vector records destructively in place, the background repair workflow evaluates the flagged memory against the originating run trace and user correction reason:
-* **Verdict `DELETE` (Hallucinated / False):** Executes the Memory Manager's **atomic tombstone/erasure transaction** (`status = 'revoked'`, `embedding = NULL`, cache invalidation, and `deletion_events` audit record).
-* **Verdict `REWRITE` (Entity Confusion / Partial Error):** Passes the corrected assertion through the **Promotion Gate** and executes **atomic supersession**—inserting the repaired record with updated provenance, setting `superseded_by` on the faulty record, and emitting `fact.superseded`.
+* **Verdict `DELETE` (Hallucinated / False):** The Memory Manager atomically tombstones the canonical record (`status = 'revoked'`, `embedding = NULL`), invalidates caches, records the `deletion_events` audit entry, and queues an idempotent backend erasure job. Completion of a remote delete is tracked separately.
+* **Verdict `REWRITE` (Entity Confusion / Partial Error):** Passes the corrected assertion through the **Promotion Gate** and atomically supersedes the canonical record—inserting the repaired record with updated provenance, setting `superseded_by` on the faulty record, emitting `fact.superseded`, and queuing backend synchronization.
 * **Tenant-Scoped Guardrail:** User-submitted feedback can directly trigger repair only on `user`-scoped memories owned by that caller; negative feedback on `tenant`-scoped facts flags the record (`needs_review`) and queues it for administrative review rather than letting a single user unilaterally overwrite shared tenant knowledge.
 
 ### Backstage Search Integration as Enterprise Document RAG Tier

@@ -628,7 +628,7 @@ Temporal coordinates execution while activities obtain authority at execution ti
 ### Parallel Multi-Destination Category Fan-Out Activities
 <!-- Source: incoming/TOOLS.md (Section: The Workflow Orchestrator Multi-Dispatch Execution Blueprint) -->
 
-- **Fault-Isolated Concurrent Fan-Out:** When a workflow broadcasts an intent across multiple authorized capabilities in a category (e.g., `communication` + `incident-management`), dispatch each capability as an independent parallel Temporal Activity (`Promise.allSettled`) with its own deterministic `Idempotency-Key` (`${workflowId}:${stepIndex}:${capabilityId}`) and Saga compensation entry—preventing a transient failure on one destination from causing duplicate retries on already-delivered destinations.
+- **Fault-Isolated Concurrent Fan-Out:** When a workflow broadcasts an intent across multiple authorized capabilities in a category (e.g., `communication` + `incidents`), dispatch each capability as an independent parallel Temporal Activity (`Promise.allSettled`) with its own deterministic `Idempotency-Key` (`${workflowId}:${stepIndex}:${capabilityId}`) and Saga compensation entry—preventing a transient failure on one destination from causing duplicate retries on already-delivered destinations.
 
 ### Dual-Mode Message Queues (`steering` vs. `followUp`) & Source-Ordered Parallel Tool Execution
 <!-- Source: incoming/PI_AGENT.md (Sections: Agent Loop Step 1 & Step 4) -->

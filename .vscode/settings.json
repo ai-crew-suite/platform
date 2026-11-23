@@ -37,5 +37,14 @@
       "master-catalogs.yml"
     ]
   },
-  "yaml.validate": true
+  "yaml.validate": true,
+  "cSpell.words": [
+    "BYOK",
+    "DSSE",
+    "evals",
+    "exfiltration",
+    "HITL",
+    "IDOR",
+    "PITR"
+  ]
 }

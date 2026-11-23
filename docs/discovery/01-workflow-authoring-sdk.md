@@ -83,7 +83,7 @@ This staging file collects all raw research and design notes related to the deve
 ### Category-Level Multi-Destination Fan-Out in Workflows
 <!-- Source: incoming/TOOLS.md -->
 
-* **Vendor-Agnostic Category Broadcasts:** Allow workflow definitions to target an entire capability category (e.g., `communication` or `incident-management`) to concurrently fan out an action across all authorized providers configured for that agent, keeping vendor driver details completely out of workflow authoring code.
+* **Vendor-Agnostic Category Broadcasts:** Allow workflow definitions to target an entire capability category (e.g., `communication` or `incidents`) to concurrently fan out an action across all authorized providers configured for that agent, keeping vendor driver details completely out of workflow authoring code.
 
 ### Fluent API Capability Prerequisites & Progressive Enhancement
 <!-- Source: incoming/TOOLS_INTERFACE.md -->
@@ -182,7 +182,7 @@ To let agents help engineers author reusable runbooks and schedules without risk
 ### Provider-Agnostic Capability Requirements via MCP
 <!-- Source: incoming/MCP.md (Sections: Using MCPs vs. API Calls for External Services) -->
 
-Workflow definitions declare abstract capability requirements (e.g., `vcs.pull_request.create`) in the workflow Graph IR rather than hardcoding vendor-specific drivers or environment variables (`process.env`):
+Workflow definitions declare abstract capability requirements (e.g., `scm.pull_request.create`) in the workflow Graph IR rather than hardcoding vendor-specific drivers or environment variables (`process.env`):
 
 * **Decoupled Binding:** At workflow compile/reconciliation time, the platform binds declared capability slots to either a `NativeAdapter`, an `HttpIntent`, or a registered **MCP Server capability** without altering the authored workflow graph.
 * **Deterministic Contract:** Regardless of whether a capability resolves to a native driver or an MCP server, the workflow SDK validates inputs and outputs against the `CapabilityDescriptor` schema contract at author/compile time.

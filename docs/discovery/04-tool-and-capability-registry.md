@@ -148,7 +148,7 @@ This staging file collects all raw research and design notes related to the unif
 ### Category-Grouped `ToolRegistry`, `ToolExecutionContext` & Concurrent Fan-Out
 <!-- Source: incoming/TOOLS.md -->
 
-* **Domain Category Aggregator (`getByCategory`):** Extend `ToolRegistry` beyond flat `get(id)` lookups by indexing tools under domain categories (e.g., `cloud-providers`, `communication`, `compliance`, `incident-management`, `kubernetes`, `observability`, `project-management`, `quality-scorecards`, `vcs`, widened via `string & {}` so new third-party capability categories do not require core union edits).
+* **Domain Category Aggregator (`getByCategory`):** Extend `ToolRegistry` beyond flat `get(id)` lookups by indexing tools under domain categories (e.g., `cloud-providers`, `communication`, `compliance`, `incidents`, `kubernetes`, `observability`, `project-management`, `scorecards`, `scm`, widened via `string & {}` so new third-party capability categories do not require core union edits).
 * **Deterministic Registration Ordering:** `ToolRegistry.list()` and `getByCategory()` must return read-only collections in deterministic registration order and reject duplicate IDs at registration time.
 * **Mandatory `ToolExecutionContext` Frame:** Every tool invocation must receive a structured `ToolExecutionContext` carrying non-nullable `identity` (`UserRef`/Service Principal), `runId`, `logger`, `signal: AbortSignal` (for cooperative timeout/cancellation), and scoped `credentials`.
 * **Standardized `ToolInvocationResult` Envelope:** Normalize all tool outcomes into a uniform result envelope (`toolId`, `category`, `output`, `summary`, `executedAt`) so concurrent multi-tool fan-out results can be aggregated cleanly.
@@ -157,7 +157,7 @@ This staging file collects all raw research and design notes related to the unif
 ### Semantic Equivalence, Brand Namespace Isolation & Centralized Outbound Gateway
 <!-- Source: incoming/TOOLS_EXPLANATIONS.md -->
 
-* **Semantic Contract Equivalence Across Providers:** Common category capabilities (e.g., `vcs.pr.create`) must guarantee identical semantic behavior and normalized I/O schemas across every implementing driver (GitHub, GitLab, Bitbucket) so switching `providerId` never changes how an agent reasons about or invokes the capability.
+* **Semantic Contract Equivalence Across Providers:** Common category capabilities (e.g., `scm.pr.create`) must guarantee identical semantic behavior and normalized I/O schemas across every implementing driver (GitHub, GitLab, Bitbucket) so switching `providerId` never changes how an agent reasons about or invokes the capability.
 * **Strict Brand Namespace Isolation at Boot:** Any vendor-specific capability exposed outside a shared category contract must be strictly prefixed with its own `providerId` namespace (e.g., `github.workflow.dispatch`, `gitlab.pipeline.trigger`). Registration validation must reject cross-brand namespace collisions at startup ("fail boot, not first run").
 * **Centralized Outbound Credential & Policy Gateway:** Like Conduit's centralized Connector gateway, individual drivers must never hold ambient credentials or make unmediated outbound calls; all invocations route through the central `ToolExecutor` + Token Broker gateway for uniform auth injection, RBAC, and auditing.
 * **Design Scope Boundary (Reject Console-Declared Tools):** Unlike Conduit's "Author" console feature, do **not** allow administrators to define new tool schemas dynamically via UI/config at runtime; preserve compile-time TypeScript contract safety via the Module Contract Pattern (`_AGENT_Q_AND_A.md` §4).
@@ -183,9 +183,9 @@ This staging file collects all raw research and design notes related to the unif
 <!-- Source: incoming/TOOLS_INTERFACE.md -->
 
 * **Expressive Agent Capability Prerequisites:** Beyond simple `toolIds` allow-lists, agents and workflows must be able to declare structured capability dependencies evaluated at preflight and boot:
-  * **Mandatory vs. Optional Categories:** Distinguish hard requirements (e.g., `vcs` required) from optional progressive-enhancement categories (e.g., use `finops` if registered, degrade gracefully if absent).
-  * **Extended Contract Features:** Require specific extended capabilities beyond a category's minimal base contract (e.g., requiring extended VCS PR-review features that a basic Git driver cannot satisfy).
-  * **Specific Provider & Co-Dependency Constraints:** Express constraints requiring a specific vendor (`vcs` must be `github`), one-of-a-set (`github` or `gitlab`), or co-installed categories (`finops` AND `project-management` both active).
+  * **Mandatory vs. Optional Categories:** Distinguish hard requirements (e.g., `scm` required) from optional progressive-enhancement categories (e.g., use `finops` if registered, degrade gracefully if absent).
+  * **Extended Contract Features:** Require specific extended capabilities beyond a category's minimal base contract (e.g., requiring extended SCM PR-review features that a basic Git driver cannot satisfy).
+  * **Specific Provider & Co-Dependency Constraints:** Express constraints requiring a specific vendor (`scm` must be `github`), one-of-a-set (`github` or `gitlab`), or co-installed categories (`finops` AND `project-management` both active).
 * **Explicit Credential Scope Taxonomy (`user` | `org` | `either` | `both`):** Every tool/driver operation must explicitly declare its supported credential scope:
   * *User-delegated credentials* passed via the Backstage user session (e.g., GitHub user OAuth).
   * *Organization / sub-organization credentials* configured at the Backstage installation level (e.g., Datadog API key).
@@ -210,7 +210,7 @@ This staging file collects all raw research and design notes related to the unif
   * **Execution Plane (Option C):** Route synchronous, cacheable interactive reads through an in-process gateway fast path for low P95 latency, while routing writes, `async` operations, and background reads onto Temporal activities running on **per-provider-instance task queues** (e.g., `drivers.github-ghes-prod`). Both paths run the exact same gateway policy pipeline with only stage 8 swapped.
   * **Future Deployment Topology (Option D):** Keep the gateway cleanly separable so high-compliance deployments can later extract it into a standalone Driver Gateway service (with on-behalf-of user tokens, network egress isolation, an MCP facade, and an optional signed WASM `prepare`/`fill` tier via `host_egress`) without rewriting drivers or workflows.
 * **Three-Layer Capability Identity & Explicit Owner Metadata:**
-  * `core` (`<category>.<noun>.<verb>`, e.g., `vcs.pullRequest.create`): Platform-owned common contract; vendor capabilities promote to `core` once a second provider serves them meaningfully, while keeping the original vendor ID intact.
+  * `core` (`<category>.<noun>.<verb>`, e.g., `scm.pullRequest.create`): Platform-owned common contract; vendor capabilities promote to `core` once a second provider serves them meaningfully, while keeping the original vendor ID intact.
   * `vendor` (`<provider>.<noun>.<verb>`, e.g., `github.actions.dispatchWorkflow`): Driver-owned extension; drivers declaring IDs outside their registered namespace fail boot.
   * `org` (`<orgns>.<provider|category>.<verb>`, e.g., `acme.github.fileSecurityException`): Installation-specific capability or instance-level mapping override; ownership is authoritative via explicit descriptor metadata (`owner: { kind, id }`), not segment counting.
 * **Single-Source-of-Truth `CapabilityDescriptor` & Slot Provenance:** Drive LLM tool schemas, requirement solvers, RBAC, cache invalidation, and docs from one declarative descriptor carrying `effect` (`'read' | 'write' | 'destructive'`), `mode` (`'sync' | 'async'`), `slots[].provenance` (`'context' | 'user' | 'constrained' | 'model'`), `standing`, `idempotency`, `cache`, `invalidates`, `dataClass`, and `approval`.
@@ -667,10 +667,10 @@ The capability layer separates **static policy metadata** (owned by `CapabilityC
 ### Canonical Capability Category Taxonomy & `approval` Category Contract
 <!-- Source: incoming/TOOLS_CATEGORIES.md (Sections: Mapping Koine to Crew Suite, Approval) -->
 
-To prevent capability namespace drift across legacy Koine prototypes and Crew Suite packages, `CapabilityCatalog` enforces a canonical kebab-case category taxonomy with compile-time alias normalization, beginning with the **`approval`** capability family:
+To prevent capability namespace drift across legacy Koine prototypes and Crew Suite packages, `CapabilityCatalog` enforces a canonical kebab-case category taxonomy, beginning with the **`approval`** capability family. Use the category IDs below; `scm`, `incidents`, and `scorecards` are the standardized IDs for their domains. The prior category labels `vcs`, `incident-management`, and `quality-scorecards` are historical only, not runtime aliases:
 
 1. **Canonical 18-Category Capability Taxonomy:**
-   - Standardize all `CapabilityDescriptor.category` values across the platform to 18 canonical categories (normalizing legacy Koine aliases at catalog compile time):
+   - Standardize all `CapabilityDescriptor.category` values across the platform to 18 canonical categories. Recognize only explicitly documented spelling aliases (currently `featureflags` for `feature-flags`); the former `vcs`, `incident-management`, and `quality-scorecards` labels are not category aliases:
      - `approval` (ServiceNow Change Management, Jira Service Management Approvals, Harness CD, GitHub Environments, Opal/Veza, Temporal HITL)
      - `artifact` (Artifactory, Harbor)
      - `booking` (Exchange, Google Workspace resources, Robin, Envoy)
@@ -681,14 +681,44 @@ To prevent capability namespace drift across legacy Koine prototypes and Crew Su
      - `email` (Microsoft 365, Google Workspace, Amazon SES)
      - `feature-flags` (alias `featureflags`: Flagsmith, OpenFeature)
      - `finops` (CloudCost, Kubecost)
-     - `incident-management` (alias `incidents`: PagerDuty, OpsGenie)
+     - `incidents` (PagerDuty, OpsGenie)
      - `infrastructure` (Terraform, Pulumi, Crossplane, Humanitec, Vault)
      - `observability` (Datadog, New Relic, Grafana)
-     - `quality-scorecards` (Soundcheck, Cortex, OpsLevel, Lighthouse, Compass)
-     - `vcs` (alias `scm`: GitHub, GitLab, Gitea)
+     - `scorecards` (Soundcheck, Cortex, OpsLevel, Lighthouse, Compass)
+     - `scm` (GitHub, GitLab, Gitea)
      - `security` (Snyk, Trivy, SonarQube)
      - `testing` (TestRail, Codecov, Playwright)
      - `ticketing` (Jira, Linear, GitHub Issues, Asana)
+### Default Driver Candidates & Base Intent Catalog
+<!-- Source: incoming/TOOLS_DEFAULT_DRIVERS.md -->
+
+The incoming catalog proposes default integration candidates and per-category base intents; these are not commitments about which providers ship at launch. Normalize the source's `featureflags` heading to the canonical `feature-flags` category. The source's overview table omits `artifact`, so its detailed `artifact` section supplies the Zot candidate below.
+
+| Canonical Category | Default Integration Candidate(s) |
+| :-- | :-- |
+| `approval` | Gotify |
+| `artifact` | Zot |
+| `booking` | Cal.com or Radicale |
+| `cd` | Argo CD |
+| `ci` | Woodpecker CI or Drone CI |
+| `communication` | Mattermost or Zulip |
+| `documentation` | Outline or Wiki.js |
+| `email` | Mailpit |
+| `feature-flags` | Flagsmith or Flipt |
+| `finops` | OpenCost |
+| `incidents` | GoAlert or Grafana OnCall |
+| `infrastructure` | OpenTofu via Atlantis or OpenBao |
+| `observability` | Grafana with VictoriaMetrics or Prometheus |
+| `scm` | Gitea or Forgejo |
+| `scorecards` | Backstage Soundcheck / Tech Insights or OpenSSF Scorecard |
+| `security` | Trivy with Dependency-Track |
+| `testing` | Allure Docker Service or Kiwi TCMS |
+| `ticketing` | Plane or Vikunja |
+
+* **Method Catalog Shape:** The source records category methods (`Seat`), arguments (`Args`), an optional routing `Destination`, and slot-fill constraints (`FillNone`, `FillAny`, `FillSpecific`, `FillRange`). Treat these as candidate contract inputs; reconcile method names and argument shapes with the existing category-contract proposals before assigning stable requirements.
+* **FinOps and Scorecards Are Platform-Specific Proposals:** Conduit does not define these categories. The suggested operations (for example, `getCostAllocation` / `setBudgetThreshold` and `getEntityScorecard` / `runRepoScorecard` / `recordCheckFact`) are best guesses that need contract validation, not Conduit-derived guarantees.
+* **Launch and License Review:** A default candidate is not a launch promise or an automatically bundled dependency. Confirm the launch set under SD-07 and review each provider's distribution model against the dependency-license constraint before bundling it.
+
 2. **`approval` Category Contract & `communication` Decoupling:**
    - Standardize `approval` capability intents around formal authorization records (`requestId`, `workflowId`, `approverId`, `comment`/`reason`): `requestApproval`, `approveRequest`, `rejectRequest`, `reassignApprovalRequest`, `escalateApprovalRequest`, and `cancelApprovalRequest`.
    - **Strict State-vs-Channel Split:** The `approval` category owns the authoritative authorization state machine and audit trail; `communication` capabilities (`communication.sendApprovalRequest`) serve strictly as notification delivery surfaces that dispatch signed callbacks back to the approval state machine.
@@ -777,10 +807,10 @@ To prevent capability namespace drift across legacy Koine prototypes and Crew Su
      - `getSecret` and `rotateSecret` never return raw credential values into Temporal event history, logs, or LLM context windows; resolved secrets remain strictly inside the Token Broker / Vault boundary.
      - Mutating IaC intents require a pre-flight `dryRun` plan diff + Infracost monthly USD delta before Tier 3 human approval, and `destroyInfrastructure` enforces explicit target environment name verification.
 
-### `incident-management` & `observability` Category Capability Contracts
+### `incidents` & `observability` Category Capability Contracts
 <!-- Source: incoming/TOOLS_CATEGORIES.md (Sections: Incidents Platforms, Observability) -->
 
-1. **`incident-management` Category Contract (alias `incidents` — On-Call & Incident Lifecycle):**
+1. **`incidents` Category Contract (On-Call & Incident Lifecycle):**
    - **Supported Providers:** PagerDuty, Opsgenie, Rootly, Incident.io, FireHydrant, Splunk On-Call (VictorOps), xMatters, Squadcast, Datadog Incident/On-Call, Grafana Incident/OnCall, Better Stack, PagerTree, and GoAlert.
    - **Standard Intents & Risk Tiers:**
      - `READ` (service-principal allowed): `getOnCall`, `listActiveIncidents`, `getIncidentStatus`.
@@ -794,10 +824,10 @@ To prevent capability namespace drift across legacy Koine prototypes and Crew Su
      - `WRITE_LOW` (`dev`/`staging`) / Mandatory `WRITE_HIGH` HITL (`prod`): `createAlertRule`, `silenceAlert`, and `muteAlerts` (requiring a bounded `duration` / `expiresAt` TTL so production alerts cannot be silenced indefinitely).
    - **Telemetry Scrubbing & Taint Invariant:** `getServiceLogs` and `getTraces` enforce bounded time-range/token caps (`<= 4,000` tokens), run synchronous DLP secret and PII/PHI redaction on all log/span attributes, and mark the workflow `tainted = true` whenever raw application logs or user-controlled request payloads are ingested.
 
-### `quality-scorecards`, `security` & `vcs` Category Capability Contracts
+### `scorecards`, `security` & `scm` Category Capability Contracts
 <!-- Source: incoming/TOOLS_CATEGORIES.md (Sections: Quality Scorecards, Security, Source Control Management) -->
 
-1. **`quality-scorecards` Category Contract (Engineering Maturity & Readiness Checks):**
+1. **`scorecards` Category Contract (Engineering Maturity & Readiness Checks):**
    - **Supported Providers:** Spotify Soundcheck, Cortex, OpsLevel, Lighthouse, and Atlassian Compass.
    - **Standard Intents & Risk Tiers:**
      - `READ`: `evaluateScorecard`, `getServiceScore`, `listFailingChecks`.
@@ -808,7 +838,7 @@ To prevent capability namespace drift across legacy Koine prototypes and Crew Su
      - `READ` / `WRITE_LOW` (async scan trigger): `scanRepository`, `scanArtifact`, `getScanResults`, `getComplianceStatus`, `verifyAttestation`.
      - `WRITE_LOW` (authenticated CI pipeline context only): `attestBuild` (SLSA provenance generation).
      - Mandatory `WRITE_HIGH` HITL (User OBO + Security RBAC required): `createSecurityException` (waiving/ignoring vulnerabilities)—requires explicit justification `reason`, bounded `expiresAt` expiration, and non-repudiable `AuditLogSink` logging.
-3. **`vcs` Category Contract (alias `scm` — Git Forges, Code Review & Releases):**
+3. **`scm` Category Contract (Git Forges, Code Review & Releases):**
    - **Supported Providers:** GitHub, GitLab, Bitbucket (Cloud & Data Center), Azure Repos, Gitea / Forgejo, and AWS CodeCommit.
    - **Standard Intents & Risk Tiers:**
      - `READ`: `getFileContent`, `getPullRequest`, `listPullRequests`, `getCommitStatus` (wrapped in per-turn randomized `<external_data_...>` delimiters; sets `tainted = true` when reading external/forked PRs).
@@ -1157,7 +1187,7 @@ Step handlers invoke external capabilities through a uniform `ctx.tools.invoke(c
 <!-- Source: incoming/ARCHITECTURE_FILE_LAYOUT.md (Section: Proposed File Architecture -- backstage-plugin-agent-node/src/extension-points & blueprints) -->
 
 * **Decoupled Driver Registration (`core-node`):** Separate backend driver modules register implementations against typed extension points and blueprints exported by `backstage-plugin-agent-node`:
-  * `platform-driver.extension-point.ts` / `platform-driver.blueprint.ts` — Observability, VCS, and IDP platform integrations.
+  * `platform-driver.extension-point.ts` / `platform-driver.blueprint.ts` — Observability, SCM, and IDP platform integrations.
   * `storage-driver.extension-point.ts` / `storage-driver.blueprint.ts` — Vector/retrieval backends (e.g., `pgvector`, Qdrant).
   * `security-driver.extension-point.ts` / `security-driver.blueprint.ts` — Secret/KMS providers (e.g., HashiCorp Vault, AWS KMS) backing the Token Broker and payload encryption.
 * **Reconciliation Note:** Driver implementations registered via these blueprints must adhere to the `CapabilityGateway` boundary (structured `HttpIntent` specs or governed `NativeAdapter` handlers with PII/PHI validation from `utils/validation.ts`), preventing direct unredacted network egress or raw credential exposure.
@@ -1217,7 +1247,7 @@ When an enterprise Backstage deployment exposes 80+ capabilities across Scaffold
 ### Predicate Verifiers for Stop Hooks (`CapabilityGateway` Post-Conditions)
 <!-- Source: incoming/COPILOT_CHAT_LESSONS.md (Section 9: Loop-Control Guardrails and Stop Hooks) -->
 
-* **Deterministic Read-Only Verifiers:** Stop Hooks execute through governed, read-only `CapabilityDescriptor` **predicate verifiers** (e.g., `catalog:validate-entity`, `vcs:verify-pull-request`, `k8s:check-rollout-ready`) rather than ad-hoc network scripts, ensuring post-condition checks respect caller RBAC, emit structured pass/fail evidence, and never mutate state during verification.
+* **Deterministic Read-Only Verifiers:** Stop Hooks execute through governed, read-only `CapabilityDescriptor` **predicate verifiers** (e.g., `catalog:validate-entity`, `scm:verify-pull-request`, `k8s:check-rollout-ready`) rather than ad-hoc network scripts, ensuring post-condition checks respect caller RBAC, emit structured pass/fail evidence, and never mutate state during verification.
 
 ### Intent-Scoped Capability Narrowing
 <!-- Source: incoming/COPILOT_CHAT_LESSONS.md (Section 10: Context-Aware Intent Routing (IIntentService) Before Loop Entry) -->
@@ -1307,7 +1337,7 @@ Rather than treating tool authorization as a binary all-allow or all-prompt togg
 | Risk Tier                  | Side-Effect Profile                                          | Default Execution Policy                                     | Examples in Backstage IDP                                    |
 | :------------------------- | :----------------------------------------------------------- | :----------------------------------------------------------- | :----------------------------------------------------------- |
 | **`READ`**                 | Pure read-only inspection (`GET`, catalog/metric queries)    | **Autonomous** (runs immediately subject to `PermissionsService` read RBAC) | `catalog:get-entity`, `k8s:get-pod-logs`, `finops:query-spend` |
-| **`REVERSIBLE_STAGE`**     | Ephemeral workspace edits, dry-runs, or non-destructive proposals (PRs, draft issues) | **Autonomous with Checkpoint** (captures pre-mutation baseline in `CheckpointStore` and runs inline schema/OPA validators) | `vcs:open-pull-request`, `terraform:plan`, `catalog:stage-patch` |
+| **`REVERSIBLE_STAGE`**     | Ephemeral workspace edits, dry-runs, or non-destructive proposals (PRs, draft issues) | **Autonomous with Checkpoint** (captures pre-mutation baseline in `CheckpointStore` and runs inline schema/OPA validators) | `scm:open-pull-request`, `terraform:plan`, `catalog:stage-patch` |
 | **`DESTRUCTIVE_MUTATION`** | Live infrastructure/production state mutation, secret/RBAC changes, or irreversible external writes | **Mandatory Approval Gate** (suspends execution until an authorized owner signs off) | `k8s:scale-deployment`, `terraform:apply`, `argocd:sync-prod`, `pagerduty:page-oncall` |
 
 * **Environment-Aware Risk Elevation:** Capabilities targeting production entities (`spec.lifecycle: production` or `prod` environment tags) automatically elevate from `REVERSIBLE_STAGE` to `DESTRUCTIVE_MUTATION` when policy requires strict production change control.

@@ -52,6 +52,14 @@ This staging file collects all raw research and design notes related to single-n
 * **Zero Vendor-Specific Parsing in Core Logic:** Never embed model-specific prompt hacks, custom XML tag parsers, or provider-tailored regex extractors inside the core reasoning engine. Rely strictly on Vercel AI SDK's standardized native tool-calling and structured-output (`generateObject` / Zod) abstractions, isolating any provider quirks inside thin adapter boundaries.
 * **Mandatory Run & Workflow Tagging on Inference Calls:** Every LLM request dispatched by the runtime must attach structured telemetry metadata (`runId`, `sessionId`, `workflowRef`, `nodeId`, and `purpose` such as `agent-turn` vs. `memory-summarization`) so downstream token spend can be attributed to exact workflows and background tasks.
 
+### Typed Inference Capability Registration & Resolution
+<!-- Source: incoming/CAPABILITIES_EXTENSION_POINTS.md -->
+
+* **Capability-Specific Provider Contracts:** Provider modules should expose only the inference capabilities they implement (for example, chat generation, embeddings, transcription, guardrails, or reranking) through typed platform contracts. Runtime consumers should resolve registered capabilities by stable IDs through a read-only registry rather than reaching into provider configuration trees.
+* **Keep Provider Adapters Out of Core and Storage:** Vendor SDK construction and provider-specific configuration belong in provider modules. Inference adapters should not register agent tools or own database, vector-store, catalog-client, or indexing setup.
+* **Preserve the Adapter API Boundary:** The source draft's `BaseChatModel`/LangChain contract and proposed identifiers are not aligned with the Vercel AI SDK-based `ModelExecutor` contract documented here; treat them as historical examples, not adopted APIs or IDs.
+* **Open Registry Shape Decision:** The source proposes both one unified inference extension point and separate extension points per capability. Keep the capability contracts independently typed, but resolve whether registration uses one or several Backstage extension points in an ADR before fixing the public API.
+
 ### Two-Tier Drafting vs. Repair Execution & Anti-Gaming Guardrails
 <!-- Source: incoming/AGENT_RECONCILIATION_CONTROLLER_KAZI.md -->
 
@@ -536,7 +544,7 @@ The reasoning runtime must **not** monotonically accumulate raw conversation tra
 The reasoning runtime decouples user-facing inference from background memory synthesis:
 
 * **Primary Reasoning Model (`ModelExecutor`):** Uses high-capability frontier models (e.g., Claude 3.5/3.7 Sonnet, GPT-4o) inside Temporal activities to execute tool calls, enforce guardrails, and generate user-facing responses.
-* **Background Extraction Model (Mem0 Container):** Configured with a fast, low-cost model (e.g., `gpt-4o-mini`) isolated strictly inside the async memory extraction loop. Its output is never streamed directly to end users; it produces structured fact/preference candidates for the Memory Manager.
+* **Background Extraction Model (Mem0's Internal Pipeline):** With self-hosted OSS, Mem0 uses the configured LLM and embedder; the managed Platform API runs its own provider stack. In either mode, extraction output is limited to memory candidates and is never streamed directly to end users. Platform-owned repair or reasoning calls continue through `ModelExecutor`.
 
 ### Pre-Inference Memory Context Injection & Guardrail Sequence
 <!-- Source: incoming/MEM0.md (Sections: Architecture for Vercel AI SDK & Temporal) -->

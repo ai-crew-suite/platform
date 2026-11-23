@@ -1,5 +1,11 @@
 # Server-Side Token Broker Scope of Work
 
+This SOW aligns tightly with a **Capability Catalog + Capability Gateway + Temporal** architecture:
+
+- **Separation of concerns (Section E & F):** Keeping token custody inside the gateway/broker boundary, passing only opaque connection/grant references through Temporal workflow state, and checking user standing at execution time rather than exposing a raw `getToken(userId)` API.
+- **Provider edge cases (Section A & D):** Accounting for single-use rotating refresh tokens (such as GitHub App `ghr_` tokens, which expire after 6 months and invalidate both the old refresh token and old `ghu_` access token immediately upon refresh) and cross-worker concurrency locks.
+- **Account binding on resume (Section B & F):** Ensuring that reconnecting a paused Temporal run verifies the exact upstream account identity (`sub` / provider user ID) and instance so a user cannot accidentally swap accounts mid-workflow.
+
 ### A. Provider and authorization design
 
 Before writing a general broker, we need to choose the first provider and answer:
@@ -110,4 +116,32 @@ Calendar time can be longer due to security review, infrastructure, product deci
 
 My recommendation is to **validate one provider and one concrete workflow first**, including whether the customer already has a suitable broker. That will reveal whether we need to build a durable broker and what its first production scope actually is.
 
-## 
+## Token Broker & Vault Ecosystem
+
+Token brokers for agentic workflows fall into three architectural categories depending on whether they only manage OAuth handshakes/refreshing or also act as an execution proxy/gateway:
+
+- **Dedicated OAuth & Credential Brokers (Auth-Only).** These handle the OAuth consent redirect, encrypt tokens at rest, auto-refresh expired tokens, and hand short-lived credentials to your backend runtime via an API.
+  - **Nango:** Supports 1,200+ APIs out of the box. Has a free self-hosted Docker/Kubernetes mode that includes core API Auth and Proxy capabilities (while gating syncs, webhooks, and OTel behind Enterprise).
+  - **Auth0 Token Vault:** Commercial SaaS extension to Auth0 that links external provider tokens (GitHub, Slack, Google) to a user's Auth0 identity with SDK helpers for Vercel AI SDK.
+  - **Scalekit:** Purpose-built agent auth and token vault supporting headless OAuth flows, MCP auth, and VPC/self-hosted enterprise deployments.
+  - **WorkOS** / \**Clerk:** Enterprise identity providers that store third-party OAuth access/refresh tokens attached to user profiles and expose APIs to retrieve fresh provider tokens on demand.
+- **Agentic Tool Gateways & Execution Brokers (Auth + Execution).** These sit in the tool-calling path so your workflow runtime or LLM never sees raw provider tokens—only opaque connection handles.
+  - **Arcade:** Stores per-user tokens in an encrypted vault and injects credentials at tool execution time. Supports Helm-based Kubernetes self-hosting.
+  - **Composio:** Provides managed OAuth apps, token refresh, and a proxy execution layer. Self-hosting is restricted to Enterprise contracts.
+  - **Kong Token Vault:** Gateway-level vault that intercepts agent/MCP traffic, injects/refreshes OAuth tokens at the edge, and enforces policy before forwarding requests.
+- **Open-Source Identity & Secret Brokers (DIY / Infrastructure-Level).**
+  - **Zalando Agentic Identity Broker:** Open-source broker built specifically for AI agents and MCP servers. It manages OAuth2 on-behalf-of (OBO) delegation chains, token exchange, and a built-in user consent UI.
+  - **Keycloak* (with Identity Brokering / Token Exchange):** Standard open-source IAM that can store upstream IdP tokens (GitHub, GitLab, Google) when users link accounts and exchange a user's Backstage JWT for an upstream provider token via RFC 8693 Token Exchange.
+  - **HashiCorp Vault:** Works well for machine-to-machine or dynamic short-lived credentials (AWS STS, database creds) via JWT auth, though it lacks built-in user-facing OAuth consent/refresh flows.
+
+## Choosing a Default Self-Hosted Provider
+
+For a Backstage plugin architecture where you want a clean provider abstraction (e.g., an extension point where enterprises can swap in Auth0, Arcade, or internal vaults) plus a zero-friction local cluster default:
+
+| Option | Local Cluster Setup | Trade-offs for a Default Provider |
+| --- | --- | --- |
+| **Nango (Free Self-Hosted)** | Single `docker-compose` or Helm deployment backed by Postgres. | **Best out-of-the-box DX.** Handles OAuth dance, PKCE, and refresh quirks for 1,200+ services. Trade-off: Source-available (Elastic License 2.0) and free tier omits audit logs and OTel export. |
+| **Zalando Agentic Identity Broker** | Lightweight container deployment designed for Kubernetes + MCP/agent gateways. | **Best open-source agent-native fit.** Includes a consent UI and RFC 8693 delegation chains without commercial feature gating. Trade-off: Newer project with fewer pre-configured SaaS OAuth templates than Nango. |
+| **Keycloak** | Official containers/Helm charts; widely used in local Backstage dev setups. | **Best pure Apache 2.0 enterprise standard.** Many Backstage users already run it for login. Trade-off: Requires more upfront realm/broker configuration to act as a multi-service OAuth token store. |
+
+**Recommendation:** Model your core Backstage token-broker interface around **opaque connection / grant IDs** (rather than raw tokens), and build your default local driver against **Nango's free self-hosted Auth + Proxy AP** or **Keycloak**.

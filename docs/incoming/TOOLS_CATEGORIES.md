@@ -23,6 +23,35 @@
 | testing        |                     | TestRail, CodeCov, Playwright                                |
 | ticketing      |                     | Jira, Linear, GitHub Issues, Asana                           |
 
+### Default Open-Source Containers by Tool Category
+
+| Koine / Crew Suite | Recommended OSS Default | License | Why it fits Docker Compose & Token Broker testing |
+| --- | --- | --- | --- |
+| **approval** | **Temporal** (Native Signals/Updates)** or **Gotify** | MIT | For human-in-the-loop gates, Temporal’s native workflow signals/updates handle approvals without external state. If you need an external REST target, **Gotify** or **n8n** provides a lightweight webhook/approval endpoint. |
+| **artifact** | **Harbor** or **Zot** | Apache 2.0 | **Zot** is a single, tiny Go binary/container implementing the OCI Distribution spec with Bearer/OAuth2 auth. Use **Harbor** if you also need Helm charts, vulnerability scanning webhooks, and RBAC UI. |
+| **booking** | **Cal.com** or **Radicale** | AGPL-3.0 / GPL-3.0 | **Cal.com** exposes a modern REST API and OAuth2 flows for room/resource scheduling. **Radicale** is an ultra-lightweight CalDAV server if you want zero-overhead calendar/resource testing. |
+| **cd** | **Argo CD** | Apache 2.0 | Industry standard for Kubernetes CD, ships with a clean REST/gRPC API, native OIDC/OAuth2 token support, and runs well in a single-node Kind/K3d or Compose setup. |
+| **ci** | **Woodpecker CI** or **Drone CI** | Apache 2.0 | Lightweight, container-native CI with a clean REST API and native OAuth2 integration with Gitea. (Alternatively, **Gitea Actions** reuses your Gitea container). |
+| **communication** | **Mattermost** or **Zulip** | MIT / Apache 2.0 | **Mattermost** (Team Edition) runs in a single container + Postgres, acts as a drop-in Slack API equivalent, and natively supports OAuth2 apps and personal access tokens. |
+| **documentation** | **Outline** or **Wiki.js** | BSL / AGPL-3.0 | **Outline** provides a Notion-like REST/RPC API and native OAuth2 provider support (great for testing user-delegated token scopes). **Wiki.js** offers a clean GraphQL API with MIT/AGPL licensing. |
+| **email** | **Mailpit** | MIT | Single-binary SMTP + REST API server built specifically for local Docker testing—captures outbound emails and lets your test suite query/assert sent messages via HTTP API. |
+| **featureflags** | **Flagsmith** or **Flipt** | BSD-3 / GPL-3.0 | **Flipt** is a single, fast Go container with native OpenFeature SDK support and clean REST/gRPC management APIs. **Flagsmith** is great if you want a full admin UI alongside OpenFeature. |
+| **finops** | **OpenCost** | Apache 2.0 | CNCF incubating standard (the open-source core behind Kubecost) with a lightweight container and clean REST API for querying cluster/namespace cost allocations. |
+| **incidents** | **GoAlert** or **Grafana OnCall** | Apache 2.0 / AGPL-3.0 | **GoAlert** (built by Target) is an open-source PagerDuty alternative with on-call schedules, escalation policies, and GraphQL/REST APIs in a lightweight Go container. |
+| **infrastructure** | **OpenTofu** (via **Atlantis**) or **OpenBao** | MPL-2.0 / Apache 2.0  | **Atlantis** gives you a stateful GitOps REST/webhook runner for OpenTofu/Terraform plans and applies. Pair with **OpenBao** (Linux Foundation fork of Vault) for secrets/KMS simulation. |
+| **observability** | **Grafana)** + **VictoriaMetrics** / **Prometheus** | AGPL-3.0 / Apache 2.0 | **Grafana** provides rich HTTP APIs for dashboards, annotations, and alerts plus OAuth2 auth, while **VictoriaMetrics** is a single-binary, low-RAM Prometheus-compatible backend. |
+| **quality-scorecards** | **Backstage Soundcheck / Tech Insights** or **OpenSSF Scorecard** | Apache 2.0 | Since your platform targets Backstage, `@backstage-community/plugin-tech-insights` runs directly inside Backstage for service scorecards, paired with **OpenSSF Scorecard** CLI/container for repo checks. |
+| **scm / vcs** | **Gitea** or **Forgejo** | MIT                   | Fast, single-container Git forge with a GitHub-compatible REST API, built-in OAuth2 provider (ideal for testing your token broker's OAuth handshake and refresh flows locally), and webhooks. |
+| **security** | **Trivy** + **Dependency-Track** | Apache 2.0 | **Trivy** runs in client/server mode via Docker for container/IaC scanning, while **OWASP Dependency-Track** gives you a persistent REST API for SBOMs, vulnerability findings, and policy triage. |
+| **testing** | ***\*Allure Docker Service\**** or **Kiwi TCMS** | Apache 2.0 / GPL-2.0  | **Allure Docker Service** provides a lightweight REST API for uploading and querying test execution results (Playwright, Jest, JUnit) without needing a heavy database. |
+| **ticketing** | **Plane)** or **Vikunja** | AGPL-3.0 | **Plane** is an open-source Jira/Linear alternative with workspaces, issues, cycles, webhooks, and API tokens. (Alternatively, **Gitea Issues** can double as your ticketing target to save RAM). |
+
+### Key Architectural Tips for Local Docker Compose
+
+1. **Reuse Gitea as your local OAuth2 Identity & Provider mock:** Gitea acts as a full RFC-compliant OAuth2 authorization server out of the box (supporting authorization code, PKCE, and rotating refresh tokens). You can test your broker's entire OAuth consent, callback binding, and token refresh concurrency against Gitea before touching external SaaS sandboxes.
+2. **Watch memory footprints in Compose:** Running 15+ containers locally can easily exhaust developer laptop RAM. Favor single-binary Go services (**Gitea, Zot, Flipt, OpenCost, GoAlert, Mailpit, VictoriaMetrics, OpenBao**) over JVM-based stacks (**SonarQube, Keycloak, Jenkins**) where possible—that entire Go stack consumes under ~1.5 GB of RAM combined.
+3. **Separate "User-Delegated OAuth" vs. "Service/API Token" adapters:** Notice that tools like **Mailpit**, **Trivy**, and **OpenCost** use service-level credentials or unauthenticated internal endpoints rather than per-user OAuth2 grants. Make sure your provider adapter matrix explicitly distinguishes **User OAuth2 / OBO providers** (Gitea, Mattermost, Outline, Cal.com, Argo CD) from **Service-Scoped / Policy-Gated providers** (OpenCost, Trivy, Mailpit) as noted in Section A and Alternative #3 of your Scope of Work.
+
 ## Approval
 
 This `approval` group maps to **workflow approval gates, change-management engines, and Human-in-the-Loop (HITL) orchestration platforms**—systems that track formal authorization records (`requestId`), enforce multi-step approval workflows (`workflowId`), record audit trails of who approved or rejected and why (`approverId`, `comment`, `reason`), and support reassignment, escalation, and formal closure.

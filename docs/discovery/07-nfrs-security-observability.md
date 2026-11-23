@@ -287,7 +287,7 @@ This staging file collects all raw research and design notes related to system-w
 <!-- Source: incoming/TOOLS_INTERFACE.md -->
 
 * **Multi-Thousand Concurrent Developer Scale:** Architecture, worker concurrency, and connection pooling must support several thousand active developers interacting with Backstage agent workflows concurrently without bottlenecking HTTP threads or exhausting downstream API quotas.
-* **Rate-Limit-Aware Caching & Request Coalescing:** Implement a tenant- and credential-scoped caching/coalescing layer in front of read-heavy external provider drivers (VCS, Observability, FinOps, Scorecards) with TTLs, cache-key isolation by caller/org scope, and `429 Retry-After` backoff coordination to prevent upstream rate limiting.
+* **Rate-Limit-Aware Caching & Request Coalescing:** Implement a tenant- and credential-scoped caching/coalescing layer in front of read-heavy external provider drivers (`scm`, `observability`, `finops`, `scorecards`) with TTLs, cache-key isolation by caller/org scope, and `429 Retry-After` backoff coordination to prevent upstream rate limiting.
 
 ### Pending Compliance Sign-Offs (Token Vault, Approval Policy & Regulated Cache)
 <!-- Source: incoming/TOOLS_INTERFACE_OPTIONS.md (Open Questions) -->
@@ -396,10 +396,11 @@ Prompt edits, skill updates, and model version bumps can silently break tool-cal
 3. **Canary & Read-Only Shadow Rollouts:**
    - Gate new prompt or model versions behind Backstage Feature Flags (5% canary cohort) or asynchronous Temporal Child Workflow shadow replays executing strictly in **read-only / `dryRun`-stubbed** mode (zero real mutations) while comparing cost, latency, and eval scores against baseline.
 
-### Regulated Data Residency, Self-Hosted Persistence & Architecture Import Lint Gates
+### Regulated Data Routing, Mem0 Backend Policy & Architecture Import Lint Gates
 <!-- Source: incoming/WRITING_AN_AGENT.md (Section 33: Vendor-Locked State and Migration Pain) -->
 
-- **Self-Hosted Open Persistence Backbone:** All semantic memory (`mem0ai/oss`), vector indexes (`pgvector` / Qdrant), session transcripts, and artifact blobs run inside customer-controlled infrastructure (KMS-encrypted PostgreSQL and S3/GCS with WORM/Object-Lock on `AuditLogSink` exports)—eliminating external SaaS vendor lock-in and satisfying SOC-2, HIPAA, and FINRA data-residency mandates.
+- **Policy-Gated Mem0 Backend Selection:** Support both self-hosted OSS and the managed Mem0 Platform API. Keep OSS data and its vector index inside the configured customer-controlled infrastructure. Permit the managed API only for tenant/data-class combinations whose region, contract, retention, and provider controls have been reviewed and approved; otherwise route to an approved self-hosted backend or fail closed. Do not claim that either mode automatically satisfies every compliance regime.
+- **Independent Platform Persistence:** Session transcripts, audit records, and artifact blobs remain in platform-controlled stores regardless of the Mem0 backend. Mem0 is a derived memory service, not the authority for platform identity, authorization, retention decisions, or audit.
 - **Storage Adapter Boundary Lint Gate:** Enforce CI architecture lint rules (ESLint `no-restricted-imports` / dependency-cruiser) prohibiting workflow definitions, reasoning modules, and Backstage HTTP controllers from importing `mem0ai`, vector DB clients, or cloud storage SDKs directly outside the designated storage adapter package.
 
 ### Pre-Persistence DLP Scrubbing, Multi-Store Retention Matrix & Compliance Audit Separation
@@ -659,10 +660,10 @@ Because external memory frameworks (Mem0) lack native compliance filtering or DL
 * **Zero Unscreened Persistence:** No user prompt, tool output, or assistant response may reach `memory.add()` without first passing through platform PII/PHI/secret redaction and safety classification.
 * **Defense-in-Depth Recall Filtering:** Retrieved memory records must be re-verified against active tenant policies and safety rules prior to LLM prompt injection to prevent stored prompt-injection or stale policy violations.
 
-### OLTP vs. OLAP Telemetry Isolation & Offline Prompt Optimization
+### Mem0 Backend Resilience, OLTP vs. OLAP Telemetry & Offline Prompt Optimization
 <!-- Source: incoming/MEM0.md (Sections: OSS vs. Platform Versions) -->
 
-Replicating Mem0 Cloud's operational resilience in a self-hosted enterprise stack requires separating transactional vector retrieval from analytical telemetry and prompt tuning:
+The managed Platform operates its own service infrastructure; self-hosted OSS availability is the operator's responsibility. Both modes still require application-side call, latency, and outcome telemetry. Separate transactional vector retrieval from analytical telemetry and prompt tuning:
 
 * **OLTP vs. OLAP Workload Separation:** Never run heavy multi-row trend aggregations (e.g., feedback completion rates, retrieval latency percentiles, or memory quality drift queries) directly against operational PostgreSQL + `pgvector` tables, as analytical scans degrade real-time HNSW/IVFFlat search latency. Stream turn trace envelopes (`retrieval`, `model_call`, `promotions`, and explicit user feedback signals) asynchronously via OpenTelemetry / event sinks into dedicated analytical storage.
 * **Offline Evaluation & Controlled Prompt Promotion:** Instead of unreviewed autonomous prompt mutation in production, aggregate negative feedback reasons and extraction failure traces into offline **Promptfoo / DeepEval** golden datasets. Candidate extraction/system prompt variants must pass regression gates and human approval before promotion to production configuration.
@@ -1026,7 +1027,7 @@ Rather than inventing proprietary trace formats or building a custom trace viewe
 Adapted from VS Code Copilot Chat's telemetry schema (which tracks edit acceptance, no-revert survival scores, and n-gram retention over time rather than `stop_reason: end_turn`), the platform measures **durable real-world outcome survival** rather than raw LLM completion counts:
 
 * **Core IDP Survival KPIs:**
-  * **VCS Pull Request Acceptance & Survival:** Percentage of agent-opened PRs that are merged (vs. closed unmerged), percentage of agent-authored lines/files surviving un-reverted at **7 days** and **30 days**, and edit-distance / diff-churn ratio between proposed and merged code.
+  * **SCM Pull Request Acceptance & Survival:** Percentage of agent-opened PRs that are merged (vs. closed unmerged), percentage of agent-authored lines/files surviving un-reverted at **7 days** and **30 days**, and edit-distance / diff-churn ratio between proposed and merged code.
   * **Backstage Catalog & Scaffolding Retention:** Percentage of generated `catalog-info.yaml` descriptors and Scaffolder-bootstrapped services that remain active, valid, and un-reverted in the Software Catalog after **30 days**.
   * **Incident Remediation Effectiveness:** Percentage of triage/remediation runs whose recommended or executed actions resolved the upstream PagerDuty/Opsgenie incident without immediate re-open or manual human rollback within **24 hours**.
   * **Handoff & Approval Acceptance Rate:** Ratio of staged agent plans approved by human reviewers on first review versus rejected or manually rewritten.
@@ -1051,7 +1052,7 @@ Adapted from VS Code Copilot Chat's telemetry schema (which tracks edit acceptan
 ### Shift-Left Policy-as-Code (`OPA` / `Conftest`) Gate on Generated Artifacts
 <!-- Source: incoming/COPILOT_CHAT_LESSONS.md (Section 21: Fuzzy Patch Matching & Diagnostic Self-Correction Loops (get_errors)) -->
 
-* **Pre-PR Compliance Verification:** Declarative infrastructure and Backstage entity files mutated by agents must pass deterministic schema and OPA/Conftest policy checks inline before any Git commit or PR capability can be invoked, ensuring SOC-2/HIPAA/FINRA guardrails (e.g., mandatory owner annotations, encryption-at-rest flags, no public ingress) are enforced prior to external VCS egress.
+* **Pre-PR Compliance Verification:** Declarative infrastructure and Backstage entity files mutated by agents must pass deterministic schema and OPA/Conftest policy checks inline before any Git commit or PR capability can be invoked, ensuring SOC-2/HIPAA/FINRA guardrails (e.g., mandatory owner annotations, encryption-at-rest flags, no public ingress) are enforced prior to external SCM egress.
 
 ### Clarification Input Provenance, Schema Validation & Audit Logging
 <!-- Source: incoming/COPILOT_CHAT_LESSONS.md (Section 22: Interactive Mid-Turn Clarification Tools (ask_questions)) -->

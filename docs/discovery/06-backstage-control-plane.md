@@ -397,7 +397,7 @@ When a workflow suspends on `AuthenticationRequiredError`, the Backstage control
 To keep engineers in direct control of stored context and prevent stale assumptions from persisting across runs:
 
 - **Expandable Memory Attribution Chips:** Surface retrieved Mem0 memories in the Backstage UI drawer as subtle, expandable citations (e.g., *"Using 2 saved preferences · 1 service note"*) showing provenance (`sourceType`) and last-verified timestamp.
-- **Immediate Forget / Mark Outdated Endpoints:** Expose RBAC- and ownership-verified endpoints (`DELETE /memories/:memoryId`, `PATCH /memories/:memoryId/outdated`) so clicking **Forget** immediately hard-deletes the record from Mem0 and logs an `AuditLogSink` entry.
+- **Forget / Mark Outdated Endpoints:** Expose RBAC- and ownership-verified endpoints (`DELETE /memories/:memoryId`, `PATCH /memories/:memoryId/outdated`). A Forget request revokes the canonical record, writes an `AuditLogSink` entry, and queues backend erasure; report completion only after the selected backend confirms deletion.
 
 ### Background Jobs Health Dashboard & One-Click Retry Endpoint
 <!-- Source: incoming/WRITING_AN_AGENT.md (Section 21: Silent Failures in Background Tasks) -->
@@ -609,15 +609,15 @@ Frontend components must never talk to Mem0 or PostgreSQL directly; all operatio
 * `GET /api/<plugin>/memories` — Lists active memories scoped strictly to `(tenant_id, user_id)` resolved from `httpAuth` + `UserInfoService`, grouped by category metadata.
 * `POST /api/<plugin>/memories` — Manually seeds a user memory (`infer: false` in Mem0 so exact user phrasing is preserved without LLM re-interpretation), tagged with `provenance: 'user_manual'`.
 * `PATCH /api/<plugin>/memories/:memoryId` — Verifies record ownership against `(tenant_id, user_id)` and routes the edit through the Memory Manager.
-* `DELETE /api/<plugin>/memories/:memoryId` — Verifies ownership and invokes transactional revocation/erasure, emitting an immutable audit entry.
+* `DELETE /api/<plugin>/memories/:memoryId` — Verifies ownership, transactionally revokes the canonical record and queues backend erasure, emitting an immutable audit entry. Return an accepted/pending result while remote erasure is outstanding.
 * **Auth & RBAC:** Every endpoint enforces `httpAuth` credential extraction (no `'anonymous'` fallbacks) and `PermissionsService` checks so users can only view/mutate their own user-scoped memories (while tenant-scoped policies require elevated admin permissions).
 
-### Replacing Mem0 Cloud Dashboard with Native Backstage Governance Views
+### Mem0 Governance UI Across Backend Modes
 <!-- Source: incoming/MEM0.md (Sections: OSS vs. Platform Versions) -->
 
-Because self-hosted Mem0 OSS ships with no administrative or user-facing UI, the Backstage frontend plugin provides the sole visual governance surface:
+The Backstage frontend is the platform's governed memory surface in both backend modes. Mem0 Platform also supplies its own dashboard; treat it as an optional provider administration surface, not a replacement for Backstage identity checks, permissions, or audit records. Self-hosted OSS has no bundled administrative dashboard.
 
-* **End-User View ("Manage My Memory"):** Self-service inspection, inline editing, custom memory seeding, and one-click GDPR deletion scoped to the authenticated user.
+* **End-User View ("Manage My Memory"):** Self-service inspection, inline editing, custom memory seeding, and one-click GDPR deletion requests scoped to the authenticated user, with completion state for asynchronous backend erasure.
 * **Tenant Admin View (Policy & Audit):** Governance interface for authoring non-auto-promoted `Policy` records, reviewing `provisional` tenant-scoped facts before activation, and triggering compliant tenant/user data exports.
 
 ### Memory Feedback Endpoint (`POST /api/<plugin>/memories/:memoryId/feedback`)
@@ -626,7 +626,7 @@ Because self-hosted Mem0 OSS ships with no administrative or user-facing UI, the
 The Backstage control plane exposes an authenticated feedback endpoint wired to the chat UI's thumbs-down / correction drawer:
 
 * **Identity & Ownership Verification:** Resolves `(tenant_id, user_id)` from `httpAuth` / `UserInfoService` (rejecting unauthenticated calls) and verifies via `PermissionsService` that the caller has read/feedback access to `memoryId` within their tenant.
-* **Immediate Penalty + Workflow Trigger:** Atomically persists the metadata down-ranking penalty (`feedback_score`) in PostgreSQL/Mem0 and triggers the asynchronous Temporal `memoryRepairWorkflow`, returning `202 Accepted` without blocking the user's UI session.
+* **Immediate Penalty + Workflow Trigger:** Atomically persists the canonical down-ranking penalty (`feedback_score`), audit record, and any Mem0 synchronization job in platform storage, then triggers the asynchronous Temporal `memoryRepairWorkflow`. Return `202 Accepted` without blocking the user's UI session; mirror feedback to Mem0 only when the selected backend supports it.
 
 ### Backstage Auth Provider Delegation for Downstream Capabilities
 <!-- Source: incoming/MCP.md (Sections: Auth Brokering for External Service MCPs) -->

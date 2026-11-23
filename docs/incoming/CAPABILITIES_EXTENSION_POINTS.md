@@ -10,7 +10,6 @@ plugins/
 
 We have a number of areas of functionality that are implemented in backstage backend plugins and organized by group. These are:
 - `/tools` that provide capabilities for our user-facing agentic plugin groups (18 total, each with a frontend and backend plugin) to use to carry out there tasks. We have groups of capabilities like "cloud providers", "version control systems", "observability platforms", "communication platforms".
-- xxxxxxxxxx import { coreServices, createBackendPlugin } from '@backstage/backend-plugin-api';​export const agenticWorkflowPlugin = createBackendPlugin({  pluginId: 'agentic-workflow-engine',  deps: {    cache: coreServices.cache, // Native injection of Memcached/Redis    logger: coreServices.logger,  },  async register(env) {    env.registerInit({      deps: { cache: env.cache, logger: env.logger },      async init({ cache, logger }) {        // Interacting with the configured store (Redis/Memcached/In-Memory)        await cache.set('latest-agent-run', 'success', { ttl: 3600000 }); // TTL in ms​        const status = await cache.get('latest-agent-run');        logger.info(`Cached engine status: ${status}`);      },    });  },});typescript
 - `databases/capabilities` plugins that provide a tool registry for state synchronization and provide runtime immutability gates.
 - `databases/runtime` storage plugins that provide agent runtime persistence for the AI Crew Suite. This module owns the durable state of the `AgentRuntime`: conversation sessions, resumable checkpoints, run lifecycle records and event logs, approval decisions, artifacts, and audit logs.
 - `/vault` that acts as an encryption and decoding engine for orchestrator graph checkpoints. Before a sensitive snapshot of conversational state is written to the cold database (`CheckpointStore`), the engine calls `StateSerializer.serialize()`. If an enterprise supplies a high-security implementation (like an AWS KMS envelope serializer), it turns clear text context into opaque, encrypted ciphertext blocks (`Uint8Array`).
@@ -50,8 +49,6 @@ Integrating the `RerankingExtensionPoint` and `RerankingDefinition` directly int
    - **The Reality:** Much like embeddings, a reranker is a specialized model that processes textual inputs to return statistical scores (`rerank(input): Promise<{ id: string; score: number }[]>`). It does not own or modify databases, table schemas, or storage blocks.
 
    - **The Clean Alignment:** While it intercepts database data streams during retrieval, the *registration* of a reranking model belongs under the `inference` package ecosystem (e.g., `plugins/inference/cohere`). This prevents database plugins from pulling in heavy language model tokens.
-
-     
 
 2. **Updating the Extension Point Namespace**
 

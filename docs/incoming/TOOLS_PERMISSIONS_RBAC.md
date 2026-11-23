@@ -75,7 +75,7 @@ The integration is primarily handled using the **Backstage OPA Permissions Wrapp
 1. **Install the Wrapper:** You add the OPA permission backend module to your Backstage backend application. This acts as an extension to Backstage’s native permission framework.
 2. **Intercept Requests:** When a user attempts an action (e.g., viewing a software catalog component or deleting a backend resource), Backstage generates an authorization request. The OPA wrapper intercepts this request and forwards the user's identity and action metadata to OPA.
 3. **Evaluate via Rego:** OPA runs the request against your external Rego policies.
-4. ***\*Enforce Decisions:\**** OPA returns a decision back to the plugin. This can be a hard ***\*boolean decision\**** (`allow`/`deny`) or a ***\*conditional decision\****. For example, if a user wants to read catalog entities, OPA can return a conditional filter ensuring they only see entities owned by their specific team.
+4. **Enforce Decisions:** OPA returns a decision back to the plugin. This can be a hard **boolean decision** (`allow`/`deny`) or a **conditional decision**. For example, if a user wants to read catalog entities, OPA can return a conditional filter ensuring they only see entities owned by their specific team.
 
 ## Why the Tool Registry is the Wrong Enforcement Layer
 
@@ -200,7 +200,7 @@ For many organizations, the ideal state is avoiding access-control logic inside 
 
 Your code should remain completely agnostic to OpenFGA and Microsoft Entra ID. The Backstage ecosystem separates user authentication/ingestion from authorization checks:
 
-![auth](/home/kevin/Repos/ai-crew-suite/platform/docs/Implementation/images/auth.jpg)
+![auth](/home/kevin/Repos/ai-crew-suite/platform/docs/incoming/images/auth.jpg)
 
 - **For Entra ID (Azure AD):** Entra ID is handled purely at the **Backstage infrastructure layer**. The organization sets up an Entra ID Auth Provider and an Org Catalog Ingestion provider. This imports the user's Microsoft security groups (e.g., `group:default/sre-admins`) directly into the Backstage Catalog as `Group` entities. Inside your plugin code, you simply fetch the user’s `BackstageIdentityResponse` payload, which natively lists these groups.
 - **For OpenFGA:** Just like OPA, OpenFGA hooks directly into the core **Backstage Permission Framework** via an adapter plugin. When your plugin issues a standard `permissionEvaluator.authorize()` call, the OpenFGA adapter intercepts it, translates your parameters into a relation tuple query, and handles the handshake.
